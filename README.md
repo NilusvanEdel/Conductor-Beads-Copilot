@@ -53,6 +53,7 @@ bd --version
 
 ### Claude Code
 
+**Full Installation** (all skills):
 ```bash
 # Clone the repository
 git clone https://github.com/NguyenSiTrung/Conductor-Beads.git
@@ -62,10 +63,31 @@ cp -r Conductor-Beads/.claude/commands/* ~/.claude/commands/
 cp -r Conductor-Beads/.claude/skills/* ~/.claude/skills/
 ```
 
-Or copy to a project for local-only access:
+**Minimal Installation** (conductor only, smaller context):
 ```bash
-cp -r Conductor-Beads/.claude your-project/
+git clone https://github.com/NguyenSiTrung/Conductor-Beads.git
+
+# Copy only commands and conductor skill
+cp -r Conductor-Beads/.claude/commands/* ~/.claude/commands/
+mkdir -p ~/.claude/skills
+cp -r Conductor-Beads/.claude/skills/conductor ~/.claude/skills/
 ```
+
+**Project-Local Installation**:
+```bash
+# Full - copy entire .claude folder
+cp -r Conductor-Beads/.claude your-project/
+
+# Minimal - conductor only
+mkdir -p your-project/.claude/skills
+cp -r Conductor-Beads/.claude/commands your-project/.claude/
+cp -r Conductor-Beads/.claude/skills/conductor your-project/.claude/skills/
+```
+
+| Installation | Includes | Best For |
+|--------------|----------|----------|
+| **Full** | conductor, beads, skill-creator skills | Standalone Beads usage, skill development |
+| **Minimal** | conductor skill only (has Beads integration) | Most projects, smaller context window |
 
 ### Gemini CLI
 
