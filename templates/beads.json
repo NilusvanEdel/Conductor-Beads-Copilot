@@ -1,0 +1,11 @@
+{
+  "enabled": true,
+  "mode": "normal",
+  "sync": "bidirectional",
+  "epicPrefix": "conductor",
+  "autoCreateTasks": true,
+  "autoSyncOnComplete": true,
+  "compactOnArchive": true,
+  "stealthMode": false,
+  "_comment": "Beads integration config for Conductor. See docs/BEADS_INTEGRATION.md for details."
+}

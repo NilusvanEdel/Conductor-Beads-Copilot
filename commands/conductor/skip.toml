@@ -1,0 +1,53 @@
+description = "Skip the current task with a reason"
+prompt = """
+## 1.0 SYSTEM DIRECTIVE
+Skip the current in-progress task and move to the next one.
+
+## 2.0 FIND CURRENT TASK
+1. Read `conductor/tracks.md` to find the in-progress track ([~])
+2. Read that track's `plan.md` to find the in-progress task ([~])
+3. If no in-progress task found, announce and halt
+
+## 3.0 GET SKIP REASON
+Ask user: "Why are you skipping this task?"
+- A) Will complete later
+- B) No longer needed
+- C) Blocked by external factor
+- D) Other (type reason)
+
+## 4.0 UPDATE PLAN
+1. If reason is "No longer needed", change `[~]` to `[x] (SKIPPED)`
+2. Otherwise, change `[~]` to `[ ]` and add comment: `<!-- SKIPPED: reason -->`
+3. Find next pending task `[ ]` and mark as `[~]`
+
+## 5.0 UPDATE STATE
+Update `implement_state.json` to point to the new current task:
+- Increment `current_task_index` within current phase
+- If moving to new phase: reset `current_task_index` to 0, increment `current_phase_index`, add completed phase to `completed_phases`
+- Set `last_updated` to current timestamp
+
+## 6.0 ANNOUNCE
+"Skipped task '[name]'. Now working on '[next_task]'."
+
+---
+
+## 7.0 BEADS SYNC (Optional)
+
+**PROTOCOL: Sync skip action with Beads if enabled.**
+
+1. **Check Beads Config:**
+   - Read `conductor/beads.json`
+   - If file doesn't exist or `enabled: false`, skip this section
+
+2. **Update Beads Task:**
+   - Read track's metadata.json for `beads_tasks` mapping
+   - Find beads_task_id for skipped task
+   - If "No longer needed": `bd close <task_id> --reason "Skipped - no longer needed"`
+   - If "Will complete later": `bd update <task_id> --status open --notes "Skipped: <reason>. Will revisit."`
+   - If "Blocked": `bd update <task_id> --status blocked --notes "<reason>"`
+
+3. **Update Next Task:**
+   - Mark next task as active: `bd update <next_task_id> --status in_progress`
+
+**CRITICAL:** If `bd` commands fail, log warning but continue.
+"""
