@@ -2,17 +2,18 @@
 
 **Measure twice, code once.**
 
-A unified toolkit for **Context-Driven Development** combining Conductor workflows with Beads persistent memory. Turn your AI assistant into a proactive project manager that follows a strict protocol: **Context → Spec & Plan → Implement**.
+A unified toolkit for **Context-Driven Development** that combines structured planning with persistent memory. Turn your AI assistant into a proactive project manager that follows a strict protocol: **Context → Spec & Plan → Implement**.
 
 **Version:** 0.1.0
 
-## What's Included
+## What is Conductor-Beads?
 
-| Component | Description |
-|-----------|-------------|
-| **Conductor** | Context-driven development methodology with specs, plans, and tracks |
-| **Beads** | Persistent task memory that survives conversation compaction |
-| **Skill Creator** | Tools for creating and packaging AI agent skills |
+Conductor-Beads integrates two powerful systems:
+
+- **Conductor** provides the methodology — specs, plans, tracks, and TDD workflows
+- **Beads** provides the memory — persistent task tracking that survives conversation compaction
+
+Together, they enable AI agents to manage long-horizon development tasks without losing context across sessions.
 
 ## Supported Platforms
 
