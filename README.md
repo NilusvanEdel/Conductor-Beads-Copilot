@@ -143,6 +143,15 @@ After setup, `conductor/beads.json` controls integration:
 }
 ```
 
+**Mode Options:**
+
+| Mode | Command | Description |
+|------|---------|-------------|
+| `"normal"` | `bd init` | Full integration. Commits `.beads/` to repo. Team members see tasks. |
+| `"stealth"` | `bd init --stealth` | Local only. `.beads/` is gitignored. Personal use on shared repos. |
+
+Use **stealth** when working on a shared repository where you don't want to commit Beads data. Use **normal** when the whole team uses Beads.
+
 ---
 
 ## Implementation Guide
