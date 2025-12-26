@@ -211,9 +211,21 @@ Located in `.claude/skills/`:
 
 | Skill | Description |
 |-------|-------------|
-| **conductor** | Auto-activates for projects with `conductor/` directory |
-| **beads** | Persistent task tracking across sessions |
-| **skill-creator** | Guide for creating new skills |
+| **conductor** | Context-driven development methodology. Auto-activates when `conductor/` directory exists. Provides intent mapping for natural language commands. |
+| **beads** | Persistent task memory that survives conversation compaction. Auto-activates when `.beads/` directory exists. Integrates with Conductor for cross-session memory. |
+| **skill-creator** | Guide for creating and packaging new AI agent skills. |
+
+### How Skills Work
+
+Skills auto-activate based on project structure:
+- `conductor/` directory → Conductor skill loads
+- `.beads/` directory → Beads skill loads
+- Both present → Integrated workflow enabled
+
+Skills provide:
+- **Context Loading**: Automatically reads relevant project files
+- **Intent Mapping**: Converts natural language to commands
+- **Proactive Behaviors**: Suggests next steps and detects issues
 
 ---
 

@@ -1,6 +1,6 @@
-# Conductor + Beads Integration Spec
+# Conductor + Beads Integration
 
-> **Status**: Draft  
+> **Status**: Implemented  
 > **Version**: 0.1.0  
 > **Date**: 2024-12-26
 

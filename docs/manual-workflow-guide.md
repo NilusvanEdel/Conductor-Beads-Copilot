@@ -1,6 +1,6 @@
 # Manual Workflow Guide
 
-This guide explains how to work with Conductor commands manually without relying on skills or auto-activation. Use this when you need precise control over the workflow or when skills don't behave as expected.
+This guide explains how to work with Conductor-Beads commands manually without relying on skills or auto-activation. Use this when you need precise control over the workflow or when skills don't behave as expected.
 
 ## Workflow Overview
 
@@ -9,53 +9,59 @@ flowchart TD
     subgraph SETUP[Setup - Once]
         A[Project] --> B["setup"]
         B --> C[Context Files]
+        C --> D{"Beads?"}
+        D -->|Yes| E["bd init"]
+        D -->|No| F[Ready]
+        E --> F
     end
 
     subgraph TRACK[Per Track]
-        C --> D["newtrack"]
-        D --> E[spec + plan]
-        E --> F{Approve?}
-        F -->|Revise| G["revise"]
-        G --> E
-        F -->|Yes| H["implement"]
+        F --> G["newtrack"]
+        G --> H[spec + plan]
+        H --> I{Approve?}
+        I -->|Revise| J["revise"]
+        J --> H
+        I -->|Yes| K["implement"]
     end
 
     subgraph IMPL[Implementation Loop]
-        H --> I[Execute Task]
-        I --> J{Complete?}
-        J -->|Yes| K[Mark done]
-        K --> L{More Tasks?}
-        L -->|Yes| M{5+ Done?}
-        M -->|Yes| N["handoff"]
-        N --> O[New Session]
-        O --> H
-        M -->|No| I
-        L -->|No| P[Track Done]
+        K --> L["bd ready"]
+        L --> M[Execute Task - TDD]
+        M --> N{Complete?}
+        N -->|Yes| O["bd done + mark [x]"]
+        O --> P{More Tasks?}
+        P -->|Yes| Q{5+ Done?}
+        Q -->|Yes| R["handoff"]
+        R --> S[New Session]
+        S --> K
+        Q -->|No| L
+        P -->|No| T[Track Done]
     end
 
     subgraph ISSUES[Handle Issues]
-        J -->|Blocked| Q["block"]
-        Q --> R["skip"]
-        R --> I
+        N -->|Blocked| U["block"]
+        U --> V["skip"]
+        V --> L
     end
 
     subgraph DONE[Cleanup]
-        P --> S["archive"]
-        P --> T["export"]
-        S --> U{New Track?}
-        U -->|Yes| D
+        T --> W["archive"]
+        T --> X["export"]
+        W --> Y{New Track?}
+        Y -->|Yes| G
     end
 
-    H -.-> V["status"]
-    H -.-> W["validate"]
+    K -.-> Z["status"]
+    K -.-> AA["validate"]
 ```
 
 ### Quick Reference
 
 | Workflow | Commands |
 |----------|----------|
-| **Standard** | `setup` → `newtrack` → `implement` → `archive` |
+| **Standard** | `setup` → `bd init` → `newtrack` → `implement` → `archive` |
 | **Multi-Section** | `implement` → `handoff` → *(new session)* → `implement` |
+| **Session Resume** | `bd ready` → `bd show --notes` → `implement` |
 | **Blocked Task** | `block` → `skip` or wait → continue |
 | **Plan Changes** | `revise` → continue `implement` |
 | **Check Status** | `status` or `validate` anytime |
@@ -76,10 +82,29 @@ Before using any command, ensure:
 1. Git is installed and initialized in your project
 2. You have write access to the project directory
 3. For implementation: `conductor/` directory exists with required files
+4. **Optional**: Beads CLI (`bd`) installed for persistent memory
+
+### Installing Beads (Recommended)
+
+```bash
+# npm (recommended)
+npm install -g @beads/bd
+
+# Homebrew (macOS/Linux)
+brew install steveyegge/beads/bd
+
+# Go
+go install github.com/steveyegge/beads/cmd/bd@latest
+
+# Verify
+bd --version
+```
+
+---
 
 ## Command Workflows
 
-### 1. `/conductor:setup` (or `/conductor-setup`)
+### 1. `/conductor-setup` (or `/conductor:setup`)
 
 **Purpose**: Initialize a new project with Conductor methodology.
 
@@ -89,7 +114,7 @@ Before using any command, ensure:
 
 ```
 Step 1: Run the command
-   /conductor:setup
+   /conductor-setup
 
 Step 2: Answer project type questions
    - Brownfield (existing code) vs Greenfield (new project)
@@ -102,11 +127,16 @@ Step 3: Complete each section (max 5 questions each)
    d) Code Styleguides → copies to code_styleguides/
    e) Workflow → creates workflow.md
 
-Step 4: Create initial track
+Step 4: Beads Integration (if bd CLI detected)
+   - Choose: Full integration, Stealth mode, or Skip
+   - Creates conductor/beads.json if enabled
+   - Runs bd init or bd init --stealth
+
+Step 5: Create initial track
    - Approve track proposal
    - Review generated spec.md and plan.md
 
-Step 5: Verify artifacts
+Step 6: Verify artifacts
    conductor/
    ├── setup_state.json
    ├── product.md
@@ -114,23 +144,34 @@ Step 5: Verify artifacts
    ├── tech-stack.md
    ├── workflow.md
    ├── tracks.md
+   ├── beads.json          # If Beads enabled
    └── tracks/<track_id>/
        ├── metadata.json
        ├── spec.md
        └── plan.md
+   .beads/                  # If Beads enabled
 ```
 
 **State file**: `conductor/setup_state.json`
 - Resume from any step if interrupted
 - Check `last_successful_step` to see progress
 
-**Troubleshooting**:
-- If setup stalls: Check `setup_state.json` for current state
-- To restart: Delete `conductor/` directory and re-run
+**Beads config**: `conductor/beads.json`
+```json
+{
+  "enabled": true,
+  "mode": "normal|stealth",
+  "sync": "bidirectional",
+  "epicPrefix": "conductor",
+  "autoCreateTasks": true,
+  "autoSyncOnComplete": true,
+  "compactOnArchive": true
+}
+```
 
 ---
 
-### 2. `/conductor:newTrack` (or `/conductor-newtrack`)
+### 2. `/conductor-newtrack` (or `/conductor:newTrack`)
 
 **Purpose**: Create a new feature or bug fix track.
 
@@ -140,9 +181,9 @@ Step 5: Verify artifacts
 
 ```
 Step 1: Run the command (optionally with description)
-   /conductor:newTrack "Add user authentication"
+   /conductor-newtrack "Add user authentication"
    # or without description for interactive mode
-   /conductor:newTrack
+   /conductor-newtrack
 
 Step 2: Define track details
    - Type: feature, bug, or improvement
@@ -161,12 +202,16 @@ Step 4: Answer planning questions (max 5)
 Step 5: Approve artifacts
    - Confirm spec and plan look correct
    - Track is added to tracks.md
+
+Step 6 (If Beads enabled):
+   - Epic created in Beads: bd-xxxx
+   - Tasks created as subtasks with dependencies
 ```
 
 **Generated artifacts**:
 ```
 conductor/tracks/<shortname_YYYYMMDD>/
-├── metadata.json   # Track configuration
+├── metadata.json   # Track configuration + beads_epic ID
 ├── spec.md         # Requirements
 └── plan.md         # Implementation plan
 ```
@@ -175,7 +220,7 @@ conductor/tracks/<shortname_YYYYMMDD>/
 
 ---
 
-### 3. `/conductor:implement` (or `/conductor-implement`)
+### 3. `/conductor-implement` (or `/conductor:implement`)
 
 **Purpose**: Execute tasks from a track's plan.
 
@@ -185,9 +230,9 @@ conductor/tracks/<shortname_YYYYMMDD>/
 
 ```
 Step 1: Run the command
-   /conductor:implement
+   /conductor-implement
    # or specify track
-   /conductor:implement auth_20241219
+   /conductor-implement auth_20241219
 
 Step 2: Track selection (if not specified)
    - First non-completed track is auto-selected
@@ -199,43 +244,58 @@ Step 3: Check dependencies
 
 Step 4: Resume check
    - If implement_state.json exists, resume from last phase and task
-   - State tracks: current_phase, current_phase_index, current_task_index, completed_phases
    - Otherwise start from first task
 
-Step 5: For each task, follow TDD workflow:
-   a) Mark task [~] in progress
-   b) Write failing tests (Red)
-   c) Implement to pass (Green)
-   d) Refactor if needed
-   e) Verify coverage (>80%)
-   f) Commit with conventional message
-   g) Update plan.md: [~] → [x] + SHA
+Step 5: Beads integration (if enabled)
+   - Run bd ready --epic <epic_id> to see available tasks
+   - Use Beads to select next task with no blockers
 
-Step 6: Phase completion
+Step 6: For each task, follow TDD workflow:
+   a) Mark task [~] in progress
+   b) Update Beads: bd update <task_id> --status in_progress
+   c) Write failing tests (Red)
+   d) Implement to pass (Green)
+   e) Refactor if needed
+   f) Verify coverage (>80%)
+   g) Commit with conventional message
+   h) Update plan.md: [~] → [x] + SHA
+   i) Update Beads: bd done <task_id> --note "commit: <sha>"
+
+Step 7: Phase completion
    - Run full test suite
    - Manual verification with user
    - Create checkpoint commit
 
-Step 7: Track completion
+Step 8: Track completion
    - Update tracks.md: [~] → [x]
    - Sync documentation (optional updates to product.md, tech-stack.md)
    - Archive/delete/skip option
 ```
 
 **State file**: `conductor/tracks/<track_id>/implement_state.json`
-- Tracks current phase (name and index) and task within phase
-- Tracks completed phases in array
-- Enables pause/resume across sessions
+```json
+{
+  "current_phase": "Phase 2",
+  "current_phase_index": 1,
+  "current_task_index": 3,
+  "completed_phases": ["Phase 1"],
+  "section_count": 1,
+  "last_handoff": null,
+  "status": "in_progress",
+  "last_updated": "2024-12-26T10:00:00Z"
+}
+```
 
 **Status markers in plan.md**:
 - `[ ]` - Pending
 - `[~]` - In progress
 - `[x]` - Completed (with commit SHA)
 - `[!]` - Blocked (with reason)
+- `[-]` - Skipped (with reason)
 
 ---
 
-### 4. `/conductor:status` (or `/conductor-status`)
+### 4. `/conductor-status` (or `/conductor:status`)
 
 **Purpose**: Display project progress overview.
 
@@ -245,7 +305,7 @@ Step 7: Track completion
 
 ```
 Step 1: Run the command
-   /conductor:status
+   /conductor-status
 
 Step 2: Review output
    - Overall progress percentage
@@ -253,13 +313,17 @@ Step 2: Review output
    - Current active track and task
    - Blocked items
    - Dependency graph
+
+Step 3 (If Beads enabled):
+   - Shows bd ready output for available tasks
+   - Shows blocked tasks from Beads
 ```
 
 **No state file**: Read-only command.
 
 ---
 
-### 5. `/conductor:validate` (or `/conductor-validate`)
+### 5. `/conductor-validate` (or `/conductor:validate`)
 
 **Purpose**: Check project integrity and fix issues.
 
@@ -267,28 +331,33 @@ Step 2: Review output
 - After manual edits to conductor files
 - When something seems broken
 - Periodic health check
+- Check for context staleness
 
 **Manual workflow**:
 
 ```
 Step 1: Run the command
-   /conductor:validate
+   /conductor-validate
 
 Step 2: Review findings
    - Missing files
    - Orphan tracks (in directory but not tracks.md)
    - Invalid metadata
    - Status inconsistencies
+   - Context staleness (setup age, dependency drift)
 
 Step 3: Choose fix option
    A) Auto-fix all issues
    B) Fix specific issues
    C) Skip (report only)
+
+Step 4: If staleness detected
+   - Suggests /conductor-refresh
 ```
 
 ---
 
-### 6. `/conductor:block` (or `/conductor-block`)
+### 6. `/conductor-block` (or `/conductor:block`)
 
 **Purpose**: Mark a task as blocked.
 
@@ -298,7 +367,7 @@ Step 3: Choose fix option
 
 ```
 Step 1: Run the command
-   /conductor:block
+   /conductor-block
 
 Step 2: Select blocked task
    - Choose from in-progress or pending tasks
@@ -307,9 +376,10 @@ Step 3: Provide reason
    - "Waiting for API credentials"
    - "Blocked by team review"
 
-Step 4: Verify update
+Step 4: Updates applied
    - Task marked [!] in plan.md
-   - Reason recorded
+   - If Beads: bd update <task_id> --status blocked
+   - Reason recorded in blockers.md
 ```
 
 **Blocker format in plan.md**:
@@ -319,7 +389,7 @@ Step 4: Verify update
 
 ---
 
-### 7. `/conductor:skip` (or `/conductor-skip`)
+### 7. `/conductor-skip` (or `/conductor:skip`)
 
 **Purpose**: Skip current task and move to next.
 
@@ -329,19 +399,19 @@ Step 4: Verify update
 
 ```
 Step 1: Run the command
-   /conductor:skip
+   /conductor-skip
 
 Step 2: Confirm task to skip
 
 Step 3: Provide justification
-   - Recorded in plan.md
+   - Recorded in plan.md and skipped.md
 
 Step 4: Implementation moves to next task
 ```
 
 ---
 
-### 8. `/conductor:revise` (or `/conductor-revise`)
+### 8. `/conductor-revise` (or `/conductor:revise`)
 
 **Purpose**: Update spec/plan when implementation reveals issues.
 
@@ -353,7 +423,7 @@ Step 4: Implementation moves to next task
 
 ```
 Step 1: Run the command
-   /conductor:revise
+   /conductor-revise
 
 Step 2: Select what to revise
    A) Spec only
@@ -367,13 +437,14 @@ Step 4: Review proposed updates
 
 Step 5: Approve changes
    - Recorded in revisions.md
+   - If Beads: tasks synced accordingly
 ```
 
 **Revision log**: `conductor/tracks/<track_id>/revisions.md`
 
 ---
 
-### 9. `/conductor:revert` (or `/conductor-revert`)
+### 9. `/conductor-revert` (or `/conductor:revert`)
 
 **Purpose**: Git-aware revert of work.
 
@@ -383,7 +454,7 @@ Step 5: Approve changes
 
 ```
 Step 1: Run the command
-   /conductor:revert
+   /conductor-revert
 
 Step 2: Select revert scope
    A) Entire track
@@ -396,11 +467,12 @@ Step 3: Review commits to revert
 Step 4: Confirm revert
    - Creates revert commits
    - Updates plan.md status markers
+   - If Beads: reopens tasks
 ```
 
 ---
 
-### 10. `/conductor:archive` (or `/conductor-archive`)
+### 10. `/conductor-archive` (or `/conductor:archive`)
 
 **Purpose**: Move completed tracks to archive.
 
@@ -410,7 +482,7 @@ Step 4: Confirm revert
 
 ```
 Step 1: Run the command
-   /conductor:archive
+   /conductor-archive
 
 Step 2: Select tracks to archive
    - Only completed [x] tracks shown
@@ -418,11 +490,12 @@ Step 2: Select tracks to archive
 Step 3: Confirm
 
 Step 4: Tracks moved to conductor/archive/
+   - If Beads: bd compact for archived epic
 ```
 
 ---
 
-### 11. `/conductor:export` (or `/conductor-export`)
+### 11. `/conductor-export` (or `/conductor:export`)
 
 **Purpose**: Generate project summary report.
 
@@ -432,44 +505,49 @@ Step 4: Tracks moved to conductor/archive/
 
 ```
 Step 1: Run the command
-   /conductor:export
+   /conductor-export
 
 Step 2: Select export format
    A) Markdown summary
    B) JSON data
-   C) Both
+   C) HTML report
 
 Step 3: Choose scope
    A) Full project
    B) Specific tracks
 
 Step 4: Report generated
-   - Output to conductor/exports/ or console
+   - Output to conductor/exports/
 ```
 
 ---
 
-### 12. `/conductor:refresh` (or `/conductor-refresh`)
+### 12. `/conductor-refresh` (or `/conductor:refresh`)
 
 **Purpose**: Sync context docs with current codebase.
 
 **When to use**: 
 - Codebase changed outside Conductor
 - Documentation drift detected
+- After major refactoring
 
 **Manual workflow**:
 
 ```
 Step 1: Run the command
-   /conductor:refresh
+   /conductor-refresh [scope]
+   
+   Scopes: all, tech, product, workflow, track
 
 Step 2: Codebase analysis
    - Scans for changes since last refresh
+   - Detects dependency drift
+   - Identifies shipped features
 
 Step 3: Review proposed updates
    - product.md changes
    - tech-stack.md changes
-   - code_styleguides/ updates
+   - workflow.md changes
 
 Step 4: Approve changes
    - Applied incrementally
@@ -478,7 +556,7 @@ Step 4: Approve changes
 
 ---
 
-### 13. `/conductor:handoff` (or `/conductor-handoff`)
+### 13. `/conductor-handoff` (or `/conductor:handoff`)
 
 **Purpose**: Create context handoff for transferring implementation to next section/session.
 
@@ -492,7 +570,7 @@ Step 4: Approve changes
 
 ```
 Step 1: Run the command
-   /conductor:handoff
+   /conductor-handoff
 
 Step 2: Context gathering
    - Current phase and task position
@@ -522,19 +600,48 @@ conductor/tracks/<track_id>/
 └── implement_state.json         # Updated with section tracking
 ```
 
-**Handoff document contains**:
-- Progress summary (% complete, current phase/task)
-- Tasks completed in this section
-- Key implementation decisions
-- Code changes summary
-- Unresolved issues
-- Context for next section
-- Next steps and resume instructions
-
 **Auto-detection**: The implement command will suggest handoff when:
 - 5+ tasks completed without handoff
 - Phase boundary with >50% tasks remaining
 - User mentions context issues
+
+---
+
+## Beads Commands Reference
+
+When Beads integration is enabled, use these commands alongside Conductor:
+
+| Command | Purpose |
+|---------|---------|
+| `bd ready` | List tasks with no blockers |
+| `bd ready --epic <id>` | List ready tasks for specific track |
+| `bd show <id>` | View task details and notes |
+| `bd show <id> --notes` | View notes (survives compaction) |
+| `bd update <id> --status in_progress` | Start working on task |
+| `bd update <id> --notes "Progress..."` | Add progress notes |
+| `bd done <id> --note "commit: abc123"` | Complete task |
+| `bd dep add <child> <parent>` | Add dependency |
+| `bd list` | See all tasks |
+| `bd search <query>` | Find tasks by keyword |
+| `bd sync` | Sync with git remote |
+
+### Session Resume with Beads
+
+After context compaction or starting a new session:
+
+```bash
+# 1. Find ready tasks
+bd ready
+
+# 2. Get context from notes
+bd show <task-id> --notes
+
+# 3. Load Conductor context
+# Read: conductor/tracks/<track_id>/spec.md, plan.md
+
+# 4. Resume implementation
+/conductor-implement <track_id>
+```
 
 ---
 
@@ -543,27 +650,40 @@ conductor/tracks/<track_id>/
 | File | Purpose | Location |
 |------|---------|----------|
 | `setup_state.json` | Setup progress | `conductor/` |
-| `implement_state.json` | Phase-aware implementation resume | `conductor/tracks/<id>/` |
+| `beads.json` | Beads integration config | `conductor/` |
 | `refresh_state.json` | Refresh progress | `conductor/` |
-| `metadata.json` | Track configuration | `conductor/tracks/<id>/` |
+| `implement_state.json` | Phase-aware implementation resume | `conductor/tracks/<id>/` |
+| `metadata.json` | Track configuration + Beads epic ID | `conductor/tracks/<id>/` |
+| `blockers.md` | Block history log | `conductor/tracks/<id>/` |
+| `skipped.md` | Skipped tasks log | `conductor/tracks/<id>/` |
+| `revisions.md` | Revision history | `conductor/tracks/<id>/` |
+| `handoff_*.md` | Section handoff documents | `conductor/tracks/<id>/` |
+
+---
 
 ## Tips for Manual Usage
 
 1. **Always check state files** before running commands to understand current progress
 
-2. **Use `/conductor:status`** frequently to see the big picture
+2. **Use `/conductor-status`** frequently to see the big picture
 
-3. **Run `/conductor:validate`** after manual edits to catch issues
+3. **Use `bd ready`** to find tasks with no blockers (if Beads enabled)
 
-4. **Commit frequently** - each task should have its own commit
+4. **Run `/conductor-validate`** after manual edits to catch issues
 
-5. **Keep plan.md updated** - status markers are the source of truth
+5. **Commit frequently** - each task should have its own commit
 
-6. **Use conventional commits**:
+6. **Keep plan.md updated** - status markers are the source of truth
+
+7. **Add notes to Beads** - they survive context compaction
+
+8. **Use conventional commits**:
    - `feat(scope): description`
    - `fix(scope): description`
    - `docs(scope): description`
    - `conductor(plan): Mark task complete`
+
+---
 
 ## Common Issues
 
@@ -572,5 +692,8 @@ conductor/tracks/<track_id>/
 | Command stalls | Check state file, resume or restart |
 | Wrong track selected | Use explicit track ID parameter |
 | Task stuck in progress | Manually update `[~]` to `[ ]` in plan.md |
-| Dependency loop | Use `/conductor:validate` to detect |
-| Missing files | Run `/conductor:setup` or `/conductor:validate` |
+| Dependency loop | Use `/conductor-validate` to detect |
+| Missing files | Run `/conductor-setup` or `/conductor-validate` |
+| Beads not syncing | Check `conductor/beads.json` has `enabled: true` |
+| Lost context after compaction | Use `bd show <id> --notes` to recover |
+| bd command fails | Conductor continues without Beads (graceful degradation) |

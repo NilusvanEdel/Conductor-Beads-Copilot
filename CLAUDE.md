@@ -4,128 +4,129 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Conductor is a **Gemini CLI extension** that enables Context-Driven Development. It transforms Gemini CLI into a project manager that follows a strict protocol: **Context → Spec & Plan → Implement**.
+Conductor-Beads is a unified toolkit for **Context-Driven Development** that combines:
 
-The extension is defined in `gemini-extension.json` and provides slash commands through TOML files in `commands/conductor/`.
+- **Conductor**: Spec-first planning, human-readable context, TDD workflow
+- **Beads**: Dependency-aware task graph, cross-session memory, agent-optimized output
+
+It works with both Gemini CLI (via extension) and Claude Code (via commands and skills).
 
 ## Architecture
 
-### Extension Structure
-- `gemini-extension.json` - Extension manifest (name, version, context file)
-- `GEMINI.md` - Context file loaded by Gemini CLI when extension is active
-- `commands/conductor/*.toml` - Slash command definitions containing prompts
+### Repository Structure
+```
+Conductor-Beads/
+├── .claude/
+│   ├── commands/           # Claude Code slash commands (13 commands)
+│   └── skills/             # Claude Code skills
+│       ├── conductor/      # Context-driven development skill
+│       ├── beads/          # Persistent task memory skill
+│       └── skill-creator/  # Skill creation guide
+├── commands/conductor/     # Gemini CLI TOML commands (13 commands)
+├── templates/              # Workflow and styleguide templates
+├── docs/                   # Documentation
+├── CLAUDE.md               # This file
+├── GEMINI.md               # Gemini CLI context
+└── gemini-extension.json   # Gemini extension manifest
+```
 
-### Commands (in `commands/conductor/`)
-| Command | File | Purpose |
-|---------|------|---------|
-| `/conductor:setup` | `setup.toml` | Initialize project with product.md, tech-stack.md, workflow.md, and first track |
-| `/conductor:newTrack` | `newTrack.toml` | Create new feature/bug track with spec.md and plan.md |
-| `/conductor:implement` | `implement.toml` | Execute tasks from current track's plan following TDD workflow |
-| `/conductor:status` | `status.toml` | Display progress overview from tracks.md |
-| `/conductor:revert` | `revert.toml` | Git-aware revert of tracks, phases, or tasks |
-| `/conductor:validate` | `validate.toml` | Validate project integrity and fix issues |
-| `/conductor:block` | `block.toml` | Mark task as blocked with reason |
-| `/conductor:skip` | `skip.toml` | Skip current task with justification |
-| `/conductor:revise` | `revise.toml` | Update spec/plan when implementation reveals issues |
-| `/conductor:archive` | `archive.toml` | Archive completed tracks |
-| `/conductor:export` | `export.toml` | Generate project summary export |
-| `/conductor:handoff` | `handoff.toml` | Create context handoff for section transfer |
-| `/conductor:refresh` | `refresh.toml` | Sync context docs with current codebase state |
+### Commands
+
+| Gemini CLI | Claude Code | Purpose |
+|------------|-------------|---------|
+| `/conductor:setup` | `/conductor-setup` | Initialize project with context files and first track |
+| `/conductor:newTrack` | `/conductor-newtrack` | Create feature/bug track with spec and plan |
+| `/conductor:implement` | `/conductor-implement` | Execute tasks from track's plan (TDD workflow) |
+| `/conductor:status` | `/conductor-status` | Display progress overview |
+| `/conductor:revert` | `/conductor-revert` | Git-aware revert of tracks, phases, or tasks |
+| `/conductor:validate` | `/conductor-validate` | Validate project integrity and fix issues |
+| `/conductor:block` | `/conductor-block` | Mark task as blocked with reason |
+| `/conductor:skip` | `/conductor-skip` | Skip current task with justification |
+| `/conductor:revise` | `/conductor-revise` | Update spec/plan when implementation reveals issues |
+| `/conductor:archive` | `/conductor-archive` | Archive completed tracks |
+| `/conductor:export` | `/conductor-export` | Generate project summary export |
+| `/conductor:handoff` | `/conductor-handoff` | Create context handoff for section transfer |
+| `/conductor:refresh` | `/conductor-refresh` | Sync context docs with current codebase state |
+
+### Skills
+
+| Skill | Location | Purpose |
+|-------|----------|---------|
+| **conductor** | `.claude/skills/conductor/` | Auto-activates when `conductor/` exists. Provides intent mapping and proactive behaviors. |
+| **beads** | `.claude/skills/beads/` | Auto-activates when `.beads/` exists. Provides persistent memory across sessions. |
+| **skill-creator** | `.claude/skills/skill-creator/` | Guide for creating new AI agent skills. |
 
 ### Generated Artifacts (in user projects)
-When users run Conductor, it creates:
-```
-conductor/
-├── product.md           # Product vision and goals
-├── product-guidelines.md # Brand/style guidelines
-├── tech-stack.md        # Technology choices
-├── workflow.md          # Development workflow (TDD, commits)
-├── tracks.md            # Master track list with status
-├── setup_state.json     # Resume state for setup
-├── refresh_state.json   # Context refresh tracking
-├── code_styleguides/    # Language-specific style guides
-└── tracks/
-    └── <track_id>/
-        ├── metadata.json
-        ├── spec.md      # Requirements
-        ├── plan.md      # Phased task list
-        ├── handoff_*.md # Section handoff documents
-        └── revisions.md # Revision history log
-```
 
-### Templates (in `templates/`)
-- `workflow.md` - Default workflow template (TDD, >80% coverage, git notes)
-- `code_styleguides/*.md` - Style guides for Python, TypeScript, JavaScript, Go, HTML/CSS
+When users run Conductor-Beads, it creates:
+```
+project/
+├── conductor/
+│   ├── product.md           # Product vision and goals
+│   ├── product-guidelines.md # Brand/style guidelines
+│   ├── tech-stack.md        # Technology choices
+│   ├── workflow.md          # Development workflow (TDD, commits)
+│   ├── tracks.md            # Master track list with status
+│   ├── beads.json           # Beads integration config (optional)
+│   ├── setup_state.json     # Resume state for setup
+│   ├── refresh_state.json   # Context refresh tracking
+│   ├── code_styleguides/    # Language-specific style guides
+│   └── tracks/
+│       └── <track_id>/
+│           ├── metadata.json     # Track config + Beads epic ID
+│           ├── spec.md           # Requirements
+│           ├── plan.md           # Phased task list
+│           ├── implement_state.json # Resume state (if in progress)
+│           ├── handoff_*.md      # Section handoff documents
+│           ├── blockers.md       # Block history log
+│           ├── skipped.md        # Skipped tasks log
+│           └── revisions.md      # Revision history log
+└── .beads/                  # Beads data (if integration enabled)
+```
 
 ## Key Concepts
 
 ### Tracks
 A track is a logical unit of work (feature or bug fix). Each track has:
-- Unique ID format: `shortname_YYYYMMDD`
-- Status markers: `[ ]` new, `[~]` in progress, `[x]` completed
-- Own directory with spec, plan, and metadata
+- Unique ID format: `shortname_YYYYMMDD` (e.g., `auth_20241226`)
+- Status markers: `[ ]` new, `[~]` in progress, `[x]` completed, `[!]` blocked, `[-]` skipped
+- Own directory with spec, plan, metadata, and state files
 
 ### Task Workflow (TDD)
-1. Select task from plan.md
-2. Mark `[~]` in progress
+1. Select task from plan.md (or use `bd ready` if Beads enabled)
+2. Mark `[~]` in progress (sync to Beads: `bd update <id> --status in_progress`)
 3. Write failing tests (Red)
 4. Implement to pass (Green)
 5. Refactor
 6. Verify >80% coverage
 7. Commit with message format: `<type>(<scope>): <description>`
-8. Attach summary via `git notes`
-9. Update plan.md with commit SHA
+8. Update plan.md with commit SHA
+9. If Beads: `bd done <id> --note "commit: <sha>"`
+
+### Beads Integration
+When Beads is enabled (`conductor/beads.json` with `enabled: true`):
+- Each track becomes a Beads epic
+- Tasks sync to Beads for persistent memory
+- `bd ready` finds tasks with no blockers
+- Notes survive context compaction
+- Graceful degradation if `bd` command fails
 
 ### Phase Checkpoints
 At phase completion:
-- Run test suite
+- Run full test suite
 - Manual verification with user
 - Create checkpoint commit
-- Attach verification report via git notes
-
-## Claude Code Implementation
-
-A Claude Code implementation is available in `.claude/`:
-
-### Slash Commands (User-Invoked)
-```
-/conductor-setup              # Initialize project
-/conductor-newtrack [desc]    # Create feature/bug track
-/conductor-implement [id]     # Execute track tasks
-/conductor-status             # Show progress
-/conductor-revert             # Git-aware revert
-/conductor-validate           # Validate project integrity
-/conductor-block              # Mark task as blocked
-/conductor-skip               # Skip current task
-/conductor-revise             # Update spec/plan when issues found
-/conductor-archive            # Archive completed tracks
-/conductor-export             # Generate project summary
-/conductor-handoff            # Create context handoff for section transfer
-/conductor-refresh            # Sync context docs with codebase
-```
-
-### Skill (Model-Invoked)
-The skill in `.claude/skills/conductor/` automatically activates when Claude detects a `conductor/` directory or related context.
-
-Skill structure:
-```
-.claude/skills/conductor/
-├── SKILL.md              # Core skill definition
-└── references/
-    ├── workflows.md      # Detailed command workflows
-    └── structure.md      # Directory layout and status markers
-```
-
-### Installation
-Copy `.claude/` to any project to enable Conductor commands, or copy commands to `~/.claude/commands/` for global access.
-
-### Interoperability
-Both Gemini CLI and Claude Code implementations use the same `conductor/` directory structure. Projects set up with either tool work with both.
 
 ## Development Notes
 
-- Commands are pure TOML files with embedded prompts - no build step required
-- The extension relies on Gemini CLI's tool calling capabilities
-- State is tracked in JSON files (setup_state.json, metadata.json)
-- Git notes are used extensively for audit trails
-- Commands always validate setup before executing
+- Commands are defined as Markdown (`.claude/commands/`) or TOML (`commands/conductor/`)
+- Skills use SKILL.md format with references/ subdirectory
+- State is tracked in JSON files (setup_state.json, implement_state.json, metadata.json)
+- Git notes used for audit trails
+- Commands validate setup before executing
+- Both Gemini CLI and Claude Code use the same `conductor/` directory structure (interoperable)
+
+## Documentation
+
+- [Manual Workflow Guide](docs/manual-workflow-guide.md) - Step-by-step command reference
+- [Beads Integration](docs/BEADS_INTEGRATION.md) - How Conductor and Beads work together
