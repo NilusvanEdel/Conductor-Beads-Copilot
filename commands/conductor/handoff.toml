@@ -297,18 +297,20 @@ CRITICAL: This command preserves implementation context when you need to continu
     - If file doesn't exist or `enabled: false`, skip this section
 
 2.  **Update Epic with Handoff Note:**
-    - Read `beads_epic` from track's metadata.json
-    - Run `bd note <epic_id> "HANDOFF Section <N>: <progress>% complete. Current: <phase> - <task>. Next: <next_action>"`
+    - Read `beads_epic` and `beads_tasks` mapping from track's metadata.json
+    - Run `bd note <beads_epic> "HANDOFF Section <N>: <progress>% complete. Current: <phase> - <task>. Next: <next_action>"`
 
 3.  **Update Current Task with Context:**
-    - If task has `beads_task_id`:
-      - Run `bd update <task_id> --notes "HANDOFF: <key decisions>, <critical context>, <next steps>"`
+    - Generate task key from current phase/task index (e.g., `phase2_task3`)
+    - Look up `beads_task_id` from the `beads_tasks` mapping
+    - If found:
+      - Run `bd update <beads_task_id> --notes "HANDOFF: <key decisions>, <critical context>, <next steps>"`
     - Format notes for post-compaction recovery (no conversation context assumed)
 
 4.  **Create Beads Handoff Summary:**
     - Run:
       ```bash
-      bd update <epic_id> --notes "
+      bd update <beads_epic> --notes "
       HANDOFF CONTEXT:
       - Progress: <X>% (<completed>/<total> tasks)
       - Phase: <current_phase>

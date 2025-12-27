@@ -95,13 +95,15 @@ CRITICAL: You must validate the success of every tool call. If any tool call fai
 3a. **BEADS CONTEXT (Optional Integration):**
     a. **Check Beads Availability:** Check if `conductor/beads.json` exists.
     b. **If exists and `enabled: true`:**
-        - Read `conductor/tracks/<track_id>/metadata.json` for `beads_epic` field
+        - Store result in variable `beads_enabled` for use throughout implementation
+        - Read `conductor/tracks/<track_id>/metadata.json` for `beads_epic` and `beads_tasks` fields
+        - Store `beads_tasks` mapping (maps plan task names to Beads IDs like `"phase1_task1": "bd-a3f8.1.1"`)
         - If `beads_epic` exists:
             i. Run `bd ready --epic <beads_epic>` to show tasks with no blockers
             ii. Display dependency status: "📊 **Beads Status:** X tasks ready, Y blocked"
             iii. Use Beads ready list to suggest next task (prioritize unblocked tasks)
             iv. If `bd` command fails, log warning and continue with normal plan.md reading
-    c. **If beads.json missing or disabled:** Continue with normal Conductor workflow.
+    c. **If beads.json missing or disabled:** Set `beads_enabled` to false and continue with normal Conductor workflow.
     d. **CRITICAL:** Beads integration is graceful - any `bd` command failure should NOT halt implementation.
 
 4.  **Check and Load Resume State:**
@@ -130,9 +132,11 @@ CRITICAL: You must validate the success of every tool call. If any tool call fai
     d. **For Each Task, You MUST:**
         i. **Defer to Workflow:** The `workflow.md` file is the **single source of truth** for the entire task lifecycle. You MUST now read and execute the procedures defined in the "Task Workflow" section of the `workflow.md` file you have in your context. Follow its steps for implementation, testing, and committing precisely.
         i-a. **Beads Task Start (If Enabled):** After marking task `[~]` in progress:
-            - If `conductor/beads.json` exists and enabled, and task has a `beads_task_id` (from plan.md comment or metadata):
-                - Run: `bd update <task_id> --status active`
-                - Run: `bd note <task_id> "Started implementation - Phase: <phase_name>, Task: <task_description>"`
+            - **ONLY if `beads_enabled` is true:**
+                - Generate task key from phase index and task index (e.g., `phase1_task1` for first task in first phase)
+                - Look up `beads_task_id` from `beads_tasks` mapping in metadata.json using task key
+                - If found, run: `bd update <beads_task_id> --status active`
+                - Run: `bd note <beads_task_id> "Started implementation - Phase: <phase_name>, Task: <task_description>"`
             - If `bd` command fails, log warning and continue normally.
         ii. **Update Implementation State:** After marking task in progress, update `implement_state.json`:
             - Set `current_phase` to the current phase name
@@ -152,8 +156,9 @@ CRITICAL: You must validate the success of every tool call. If any tool call fai
             - If user mentions context issues, confusion, or session ending
             - Announce: "📋 **Handoff Suggestion:** You've completed significant work in this section. Consider running `/conductor:handoff` (or `/conductor-handoff`) to save context before continuing or ending the session."
         iv-a. **Beads Task Completion Sync (If Enabled):** After task marked `[x]` complete:
-            - If `conductor/beads.json` exists and enabled, and task has a `beads_task_id`:
-                - Run: `bd done <task_id> --note "Completed: <commit_sha> | <task_description> | Files: <modified_files_summary>"`
+            - **ONLY if `beads_enabled` is true:**
+                - Look up `beads_task_id` from `beads_tasks` mapping (same key as i-a)
+                - If found, run: `bd done <beads_task_id> --note "Completed: <commit_sha> | <task_description> | Files: <modified_files_summary>"`
                 - This automatically unblocks dependent tasks in Beads
                 - The note includes resumability context (commit SHA, description, files changed) to survive context compaction
             - If `bd` command fails, log warning and continue normally.
@@ -171,7 +176,7 @@ CRITICAL: You must validate the success of every tool call. If any tool call fai
     -   This requires finding the specific heading for the track (e.g., `## [~] Track: <Description>`) and replacing it with the completed status (e.g., `## [x] Track: <Description>`).
     -   **Clean Up State:** Delete the `conductor/tracks/<track_id>/implement_state.json` file as implementation is complete.
     -   **Beads Epic Completion (If Enabled):**
-        - If `conductor/beads.json` exists and enabled, and track has `beads_epic` in metadata.json:
+        - **ONLY if `beads_enabled` is true** and track has `beads_epic` in metadata.json:
             - Run: `bd done <epic_id> --note "Track completed: <track_description> | All <task_count> tasks done | Final commit: <latest_commit_sha>"`
             - This marks the epic complete and provides resumability context
         - If `bd` command fails, log warning and continue normally.

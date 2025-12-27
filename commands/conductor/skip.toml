@@ -41,13 +41,17 @@ Update `implement_state.json` to point to the new current task:
 
 2. **Update Beads Task:**
    - Read track's metadata.json for `beads_tasks` mapping
-   - Find beads_task_id for skipped task
-   - If "No longer needed": `bd close <task_id> --reason "Skipped - no longer needed"`
-   - If "Will complete later": `bd update <task_id> --status open --notes "Skipped: <reason>. Will revisit."`
-   - If "Blocked": `bd update <task_id> --status blocked --notes "<reason>"`
+   - Generate task key from phase/task index (e.g., `phase1_task2`)
+   - Look up `beads_task_id` from the mapping
+   - If found:
+     - If "No longer needed": `bd close <beads_task_id> --reason "Skipped - no longer needed"`
+     - If "Will complete later": `bd update <beads_task_id> --status open --notes "Skipped: <reason>. Will revisit."`
+     - If "Blocked": `bd update <beads_task_id> --status blocked --notes "<reason>"`
 
 3. **Update Next Task:**
-   - Mark next task as active: `bd update <next_task_id> --status in_progress`
+   - Generate next task key (e.g., `phase1_task3`)
+   - Look up next `beads_task_id` from the mapping
+   - If found, mark as active: `bd update <next_beads_task_id> --status in_progress`
 
 **CRITICAL:** If `bd` commands fail, log warning but continue.
 """

@@ -207,7 +207,10 @@ CRITICAL: You must validate the success of every tool call. If any tool call fai
           }
         }
         ```
-    -   Use descriptive keys matching phase/task names (sanitized to valid JSON keys).
+    -   **Key naming convention:**
+        -   Phase keys: `phase{N}` (1-indexed, e.g., `phase1`, `phase2`)
+        -   Task keys: `phase{N}_task{M}` (both 1-indexed, e.g., `phase1_task1`, `phase2_task3`)
+    -   Store ALL phase and task IDs returned from `bd create` commands.
 
 6.  **Announce Beads Sync (if successful):**
     > "Track synced with Beads. Epic ID: <epic_id>. Use `bd tree <epic_id>` to view the task hierarchy."

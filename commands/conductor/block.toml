@@ -16,10 +16,14 @@ Change `[~] Task name` to `[!] Task name [BLOCKED: reason]`
 
 ### 4. Sync with Beads (if enabled)
 - Check if `conductor/beads.json` exists and `enabled: true`
-- If enabled and task has `beads_task_id` in track metadata:
-  - Run `bd update <task_id> --status blocked --note "<reason>"`
-  - If blocker is another task, create dependency: `bd dep add <blocked_task> <blocker_task>`
-- If Beads not enabled, skip silently
+- If enabled:
+  - Read `beads_tasks` mapping from track's metadata.json
+  - Generate task key from phase/task index (e.g., `phase1_task2`)
+  - Look up `beads_task_id` from the mapping
+  - If found, run: `bd update <beads_task_id> --status blocked --note "<reason>"`
+  - If blocker is another task, create dependency: `bd dep add <blocked_task_id> <blocker_task_id>`
+- If Beads not enabled or task ID not found, skip silently
+- If `bd` command fails, log warning but continue
 
 ### 5. Announce
 "Task marked as blocked. Use `/conductor:status` to see all blockers."

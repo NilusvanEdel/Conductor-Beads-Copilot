@@ -131,11 +131,14 @@ Your workflow MUST anticipate and handle common non-linear Git histories, such a
    - If file doesn't exist or `enabled: false`, skip this section
 
 2. **Reopen Beads Tasks:**
+   - Read `beads_tasks` mapping from track's metadata.json
    - For each reverted task:
-     - Find beads_task_id from track's metadata.json
-     - Run `bd reopen <task_id> --reason "Reverted in Conductor"`
+     - Generate task key from phase/task index (e.g., `phase1_task2`)
+     - Look up `beads_task_id` from the mapping
+     - If found, run: `bd reopen <beads_task_id> --reason "Reverted in Conductor"`
    - For reverted phases:
-     - Reopen all tasks in that phase
+     - Iterate through all tasks in that phase
+     - Reopen each using the same lookup pattern
 
 3. **Update Dependencies:**
    - If revert changed task order, update Beads dependencies accordingly
