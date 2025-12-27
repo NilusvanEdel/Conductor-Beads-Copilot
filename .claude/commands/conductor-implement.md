@@ -129,16 +129,18 @@ Implement track: $ARGUMENTS
    c. **For Each Task:**
           - **i. Defer to Workflow:** `workflow.md` is the **single source of truth** for task lifecycle. Follow its "Task Workflow" section for implementation, testing, and committing.
            - **i-a. Beads Task Start (If Enabled):** After marking task `[~]` in progress:
-             - **ONLY if `beads_enabled` is true:**
-               - Generate task key from phase index and task index (e.g., `phase1_task1` for first task in first phase)
-               - Look up `beads_task_id` from `beads_tasks` mapping in metadata.json using task key
-               - If found, run: `bd update <beads_task_id> --status in-progress --assignee conductor`
-               - If `bd` command fails, log warning and continue (graceful degradation)
-           - **i-b. Beads Task Complete (If Enabled):** After marking task `[x]` complete:
-             - **ONLY if `beads_enabled` is true:**
-               - Look up `beads_task_id` from `beads_tasks` mapping (same key as i-a)
-               - If found, run: `bd close <beads_task_id> --reason "commit: <sha_7chars> - <description>"`
-               - If `bd` command fails, log warning and continue (graceful degradation)
+              - **ONLY if `beads_enabled` is true:**
+                - Generate task key from phase index and task index (e.g., `phase1_task1` for first task in first phase)
+                - Look up `beads_task_id` from `beads_tasks` mapping in metadata.json using task key
+                - If found, run: `bd update <beads_task_id> --status in_progress`
+                - If `bd` command fails, log warning and continue (graceful degradation)
+            - **i-b. Beads Task Complete (If Enabled):** After marking task `[x]` complete:
+              - **ONLY if `beads_enabled` is true:**
+                - Look up `beads_task_id` from `beads_tasks` mapping (same key as i-a)
+                - If found:
+                  - First add completion notes: `bd update <beads_task_id> --notes "COMPLETED: commit <sha_7chars> - <description>"`
+                  - Then close the task: `bd close <beads_task_id> --reason "Task completed"`
+                - If `bd` command fails, log warning and continue (graceful degradation)
       - **ii. Update Implementation State:** After marking task in progress:
         - Set `current_phase` to current phase name
         - Set `current_phase_index` to current phase number (zero-based)

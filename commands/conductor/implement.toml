@@ -135,8 +135,7 @@ CRITICAL: You must validate the success of every tool call. If any tool call fai
             - **ONLY if `beads_enabled` is true:**
                 - Generate task key from phase index and task index (e.g., `phase1_task1` for first task in first phase)
                 - Look up `beads_task_id` from `beads_tasks` mapping in metadata.json using task key
-                - If found, run: `bd update <beads_task_id> --status active`
-                - Run: `bd note <beads_task_id> "Started implementation - Phase: <phase_name>, Task: <task_description>"`
+                - If found, run: `bd update <beads_task_id> --status in_progress --notes "Started: Phase <phase_name>, Task: <task_description>"`
             - If `bd` command fails, log warning and continue normally.
         ii. **Update Implementation State:** After marking task in progress, update `implement_state.json`:
             - Set `current_phase` to the current phase name
@@ -158,9 +157,10 @@ CRITICAL: You must validate the success of every tool call. If any tool call fai
         iv-a. **Beads Task Completion Sync (If Enabled):** After task marked `[x]` complete:
             - **ONLY if `beads_enabled` is true:**
                 - Look up `beads_task_id` from `beads_tasks` mapping (same key as i-a)
-                - If found, run: `bd done <beads_task_id> --note "Completed: <commit_sha> | <task_description> | Files: <modified_files_summary>"`
+                - If found:
+                  - First add completion notes: `bd update <beads_task_id> --notes "COMPLETED: commit <commit_sha> | <task_description> | Files: <modified_files_summary>"`
+                  - Then close the task: `bd close <beads_task_id> --reason "Task completed"`
                 - This automatically unblocks dependent tasks in Beads
-                - The note includes resumability context (commit SHA, description, files changed) to survive context compaction
             - If `bd` command fails, log warning and continue normally.
     e. **Handle Blocked Tasks:**
         - If a task is marked with `[!]`, announce: "⚠️ Task is blocked: [reason]"

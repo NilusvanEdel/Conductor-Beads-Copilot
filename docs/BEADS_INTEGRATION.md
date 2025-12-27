@@ -133,7 +133,7 @@ Combined Workflow:
    → Shows tasks with no blockers
 
 3. Select task and mark in-progress:
-   bd update bd-a3f8.1 --status active
+   bd update bd-a3f8.1 --status in_progress
 
 4. Execute TDD workflow (from Conductor):
    - Write failing tests
@@ -141,7 +141,8 @@ Combined Workflow:
    - Refactor
 
 5. On completion:
-   bd close bd-a3f8.1 --reason "Implemented JWT auth tests, 95% coverage. commit: abc123"
+   bd update bd-a3f8.1 --notes "Implemented JWT auth tests, 95% coverage. commit: abc123"
+   bd close bd-a3f8.1 --reason "Task completed"
    
 6. Conductor updates plan.md with commit SHA
 ```
