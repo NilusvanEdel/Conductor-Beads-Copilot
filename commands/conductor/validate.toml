@@ -97,13 +97,21 @@ If user chooses A, perform fixes and re-run validation to confirm.
 
 ---
 
-## 5.0 BEADS VALIDATION (Optional)
+## 5.0 BEADS VALIDATION
 
-**PROTOCOL: Include Beads consistency checks if enabled.**
+**PROTOCOL: Include Beads consistency checks.**
 
-1. **Check Beads Config:**
-   - Read `conductor/beads.json`
-   - If file doesn't exist or `enabled: false`, skip this section
+1. **Check Beads CLI:**
+   - Execute `which bd` to check if the Beads CLI is available
+   - If `bd` is not found, present the following prompt:
+     > "⚠️ Beads CLI (`bd`) is not installed. Beads provides persistent task memory across sessions.
+     > A) Continue validation without Beads checks
+     > B) Stop - I'll install Beads first
+     >
+     > Please respond with A or B."
+     - **If A:** Skip remaining Beads validation steps.
+     - **If B:** HALT and wait for user to install Beads.
+   - If `bd` is found, continue to Beads integrity checks.
 
 2. **Beads Integrity Checks:**
    a. **Database Check:** Run `bd --version` to verify bd is available
@@ -112,6 +120,14 @@ If user chooses A, perform fixes and re-run validation to confirm.
       - Find tasks `[x]` in plan.md but open in Beads
    c. **Orphan Check:** Find Beads tasks with no matching Conductor track
    d. **Epic Check:** Verify each track with `beads_epic` in metadata has valid epic in Beads
+   e. **Error Handling:** If any `bd` command fails:
+      > "⚠️ Beads command failed: <error message>
+      > A) Continue validation without Beads checks
+      > B) Retry the failed command
+      > C) Stop - I'll fix the issue first"
+      - If A: Skip remaining Beads validation.
+      - If B: Retry the command.
+      - If C: HALT and wait for user.
 
 3. **Add to Report:**
    ```
@@ -126,6 +142,4 @@ If user chooses A, perform fixes and re-run validation to confirm.
    - Sync status markers between systems
    - Remove orphan Beads tasks
    - Re-link tracks to epics
-
-**CRITICAL:** If `bd` commands fail, report as warning, not error.
 """

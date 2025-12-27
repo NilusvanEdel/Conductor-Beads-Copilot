@@ -82,9 +82,9 @@ Before using any command, ensure:
 1. Git is installed and initialized in your project
 2. You have write access to the project directory
 3. For implementation: `conductor/` directory exists with required files
-4. **Optional**: Beads CLI (`bd`) installed for persistent memory
+4. Beads CLI (`bd`) installed for persistent memory (Conductor will attempt Beads integration; if unavailable, you can choose to continue without it)
 
-### Installing Beads (Recommended)
+### Installing Beads
 
 ```bash
 # npm (recommended)

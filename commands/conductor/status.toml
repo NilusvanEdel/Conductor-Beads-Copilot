@@ -92,15 +92,30 @@ CRITICAL: You must validate the success of every tool call. If any tool call fai
     ```
 
 ### 2.4 BEADS STATUS
-**PROTOCOL: Display Beads task status if integration is enabled.**
+**PROTOCOL: Display Beads task status.**
 
-1.  **Check Beads Integration:**
-    -   Check if `conductor/beads.json` exists
-    -   If it exists, read it and check if `enabled` is `true`
-    -   If not enabled or file doesn't exist, skip this section entirely
+1.  **Check Beads CLI:**
+    -   Execute `which bd` to check if the Beads CLI is available
+    -   If `bd` is not found, present the following prompt:
+        > "⚠️ Beads CLI (`bd`) is not installed. Beads provides persistent task memory across sessions.
+        > A) Continue without Beads status
+        > B) Stop - I'll install Beads first
+        >
+        > Please respond with A or B."
+        -   **If A:** Skip remaining Beads steps.
+        -   **If B:** HALT and wait for user to install Beads.
+    -   If `bd` is found, continue to gather Beads status.
 
-2.  **Gather Beads Status (if enabled):**
+2.  **Gather Beads Status:**
     -   Run `bd ready` to get tasks with no blockers (ready to work)
+    -   **Error Handling:** If `bd` command fails:
+        > "⚠️ Beads command failed: <error message>
+        > A) Continue without Beads status
+        > B) Retry the failed command
+        > C) Stop - I'll fix the issue first"
+        -   If A: Skip remaining Beads steps.
+        -   If B: Retry the command.
+        -   If C: HALT and wait for user.
     -   Identify the active track (marked `[~]` in tracks.md)
     -   If there's an active track, check its `metadata.json` for `beads.epic_id`
     -   If epic_id exists, run `bd show <epic_id>` to get detailed task status

@@ -28,12 +28,27 @@ For each track to archive:
 ## 4.5 BEADS COMPACTION
 Leverage Beads' semantic memory decay to keep context manageable.
 
-1. Check if `conductor/beads.json` exists with `compactOnArchive: true`
-2. If NOT enabled or file missing, skip this section silently
-3. For each archived track:
+1. Check if the Beads CLI is available by running `which bd`
+2. If `bd` is not found, present the following prompt:
+   > "⚠️ Beads CLI (`bd`) is not installed. Beads provides persistent task memory across sessions.
+   > A) Continue archive without Beads compaction
+   > B) Stop - I'll install Beads first
+   >
+   > Please respond with A or B."
+   - **If A:** Skip remaining Beads steps.
+   - **If B:** HALT and wait for user to install Beads.
+3. If `bd` is found, for each archived track:
    - Read `conductor/tracks/<track_id>/metadata.json`
    - If `beads_epic` field exists:
      - Run `bd compact <epic_id>` to summarize and compact completed tasks
+   - **Error Handling:** If `bd` command fails:
+     > "⚠️ Beads command failed: <error message>
+     > A) Continue archive without Beads compaction
+     > B) Retry the failed command
+     > C) Stop - I'll fix the issue first"
+     - If A: Skip remaining Beads steps.
+     - If B: Retry the command.
+     - If C: HALT and wait for user.
 4. If any epics were compacted, announce: "Compacted Beads history for archived tracks"
 
 5. Offer deep compaction option:

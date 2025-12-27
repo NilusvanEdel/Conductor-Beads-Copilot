@@ -75,16 +75,32 @@ Save to selected location and announce completion.
 
 ---
 
-## 6.0 BEADS STATISTICS (Optional)
+## 6.0 BEADS STATISTICS
 
-**PROTOCOL: Include Beads statistics in export if enabled.**
+**PROTOCOL: Include Beads statistics in export.**
 
-1. **Check Beads Config:**
-   - Read `conductor/beads.json`
-   - If file doesn't exist or `enabled: false`, skip this section
+1. **Check Beads CLI:**
+   - Execute `which bd` to check if the Beads CLI is available
+   - If `bd` is not found, present the following prompt:
+     > "⚠️ Beads CLI (`bd`) is not installed. Beads provides persistent task memory across sessions.
+     > A) Continue export without Beads statistics
+     > B) Stop - I'll install Beads first
+     >
+     > Please respond with A or B."
+     - **If A:** Skip remaining Beads steps.
+     - **If B:** HALT and wait for user to install Beads.
+   - If `bd` is found, continue to gather Beads data.
 
 2. **Gather Beads Data:**
    - Run `bd stats` to get project metrics
+   - **Error Handling:** If `bd` command fails:
+     > "⚠️ Beads command failed: <error message>
+     > A) Continue export without Beads statistics
+     > B) Retry the failed command
+     > C) Stop - I'll fix the issue first"
+     - If A: Skip remaining Beads steps.
+     - If B: Retry the command.
+     - If C: HALT and wait for user.
    - Include in export under "## Beads Statistics":
      - Total issues by status
      - Issues by priority
@@ -105,6 +121,4 @@ Save to selected location and announce completion.
    - Blocked: X
    - Completed: X
    ```
-
-**CRITICAL:** If `bd` commands fail, continue without Beads section.
 """

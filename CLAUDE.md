@@ -67,7 +67,7 @@ project/
 │   ├── tech-stack.md        # Technology choices
 │   ├── workflow.md          # Development workflow (TDD, commits)
 │   ├── tracks.md            # Master track list with status
-│   ├── beads.json           # Beads integration config (optional)
+│   ├── beads.json           # Beads integration config
 │   ├── setup_state.json     # Resume state for setup
 │   ├── refresh_state.json   # Context refresh tracking
 │   ├── code_styleguides/    # Language-specific style guides
@@ -81,7 +81,7 @@ project/
 │           ├── blockers.md       # Block history log
 │           ├── skipped.md        # Skipped tasks log
 │           └── revisions.md      # Revision history log
-└── .beads/                  # Beads data (if integration enabled)
+└── .beads/                  # Beads data (created by bd init)
 ```
 
 ## Key Concepts

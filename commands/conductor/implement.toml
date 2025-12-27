@@ -92,19 +92,33 @@ CRITICAL: You must validate the success of every tool call. If any tool call fai
         - `conductor/workflow.md`
     c. **Error Handling:** If you fail to read any of these files, you MUST stop and inform the user of the error.
 
-3a. **BEADS CONTEXT (Optional Integration):**
-    a. **Check Beads Availability:** Check if `conductor/beads.json` exists.
-    b. **If exists and `enabled: true`:**
-        - Store result in variable `beads_enabled` for use throughout implementation
+3a. **BEADS CONTEXT:**
+    a. **Check Beads Availability:** Execute `which bd` to check if the Beads CLI is available.
+    b. **If `bd` is not found:**
+        - Present the following prompt:
+            > "⚠️ Beads CLI (`bd`) is not installed. Beads provides persistent task memory across sessions.
+            > A) Continue without Beads integration
+            > B) Stop - I'll install Beads first
+            >
+            > Please respond with A or B."
+        - **If A:** Set `beads_enabled` to false and continue with normal Conductor workflow.
+        - **If B:** HALT and wait for user to install Beads.
+    c. **If `bd` is found:**
+        - Set `beads_enabled` to true
         - Read `conductor/tracks/<track_id>/metadata.json` for `beads_epic` and `beads_tasks` fields
         - Store `beads_tasks` mapping (maps plan task names to Beads IDs like `"phase1_task1": "bd-a3f8.1.1"`)
         - If `beads_epic` exists:
             i. Run `bd ready --epic <beads_epic>` to show tasks with no blockers
             ii. Display dependency status: "📊 **Beads Status:** X tasks ready, Y blocked"
             iii. Use Beads ready list to suggest next task (prioritize unblocked tasks)
-            iv. If `bd` command fails, log warning and continue with normal plan.md reading
-    c. **If beads.json missing or disabled:** Set `beads_enabled` to false and continue with normal Conductor workflow.
-    d. **CRITICAL:** Beads integration is graceful - any `bd` command failure should NOT halt implementation.
+            iv. **Error Handling:** If `bd` command fails:
+                > "⚠️ Beads command failed: <error message>
+                > A) Continue without Beads integration
+                > B) Retry the failed command
+                > C) Stop - I'll fix the issue first"
+                - If A: Set `beads_enabled` to false and continue.
+                - If B: Retry the command.
+                - If C: HALT and wait for user.
 
 4.  **Check and Load Resume State:**
     a. **Check for State File:** Check if `conductor/tracks/<track_id>/implement_state.json` exists.
@@ -136,7 +150,14 @@ CRITICAL: You must validate the success of every tool call. If any tool call fai
                 - Generate task key from phase index and task index (e.g., `phase1_task1` for first task in first phase)
                 - Look up `beads_task_id` from `beads_tasks` mapping in metadata.json using task key
                 - If found, run: `bd update <beads_task_id> --status in_progress --notes "Started: Phase <phase_name>, Task: <task_description>"`
-            - If `bd` command fails, log warning and continue normally.
+            - **Error Handling:** If `bd` command fails:
+                > "⚠️ Beads command failed: <error message>
+                > A) Continue without Beads integration
+                > B) Retry the failed command
+                > C) Stop - I'll fix the issue first"
+                - If A: Set `beads_enabled` to false and continue.
+                - If B: Retry the command.
+                - If C: HALT and wait for user.
         ii. **Update Implementation State:** After marking task in progress, update `implement_state.json`:
             - Set `current_phase` to the current phase name
             - Set `current_phase_index` to the current phase number (zero-based)
@@ -161,7 +182,14 @@ CRITICAL: You must validate the success of every tool call. If any tool call fai
                   - First add completion notes: `bd update <beads_task_id> --notes "COMPLETED: commit <commit_sha> | <task_description> | Files: <modified_files_summary>"`
                   - Then close the task: `bd close <beads_task_id> --reason "Task completed"`
                 - This automatically unblocks dependent tasks in Beads
-            - If `bd` command fails, log warning and continue normally.
+            - **Error Handling:** If `bd` command fails:
+                > "⚠️ Beads command failed: <error message>
+                > A) Continue without Beads integration
+                > B) Retry the failed command
+                > C) Stop - I'll fix the issue first"
+                - If A: Set `beads_enabled` to false and continue.
+                - If B: Retry the command.
+                - If C: HALT and wait for user.
     e. **Handle Blocked Tasks:**
         - If a task is marked with `[!]`, announce: "⚠️ Task is blocked: [reason]"
         - Ask user:
@@ -179,7 +207,14 @@ CRITICAL: You must validate the success of every tool call. If any tool call fai
         - **ONLY if `beads_enabled` is true** and track has `beads_epic` in metadata.json:
             - Run: `bd done <epic_id> --note "Track completed: <track_description> | All <task_count> tasks done | Final commit: <latest_commit_sha>"`
             - This marks the epic complete and provides resumability context
-        - If `bd` command fails, log warning and continue normally.
+        - **Error Handling:** If `bd` command fails:
+            > "⚠️ Beads command failed: <error message>
+            > A) Continue without Beads integration
+            > B) Retry the failed command
+            > C) Stop - I'll fix the issue first"
+            - If A: Continue without Beads.
+            - If B: Retry the command.
+            - If C: HALT and wait for user.
     -   Announce that the track is fully complete and the tracks file has been updated.
 
 ---

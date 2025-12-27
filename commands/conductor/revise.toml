@@ -88,13 +88,21 @@ Report what was revised:
 
 ---
 
-## 10.0 BEADS SYNC (Optional)
+## 10.0 BEADS SYNC
 
-**PROTOCOL: Sync revisions with Beads if enabled.**
+**PROTOCOL: Sync revisions with Beads.**
 
-1. **Check Beads Config:**
-   - Read `conductor/beads.json`
-   - If file doesn't exist or `enabled: false`, skip this section
+1. **Check Beads CLI:**
+   - Execute `which bd` to check if the Beads CLI is available
+   - If `bd` is not found, present the following prompt:
+     > "⚠️ Beads CLI (`bd`) is not installed. Beads provides persistent task memory across sessions.
+     > A) Continue without Beads sync
+     > B) Stop - I'll install Beads first
+     >
+     > Please respond with A or B."
+     - **If A:** Skip remaining Beads steps.
+     - **If B:** HALT and wait for user to install Beads.
+   - If `bd` is found, continue to load Beads mapping.
 
 2. **Load Beads Mapping:**
    - Read `beads_epic` and `beads_tasks` mapping from track's metadata.json
@@ -102,6 +110,14 @@ Report what was revised:
 3. **Sync Task Changes:**
    - For each NEW task added to plan.md:
      - Run `bd create "<task_description>" -P <phase_beads_id>`
+     - **Error Handling:** If `bd` command fails:
+       > "⚠️ Beads command failed: <error message>
+       > A) Continue without Beads sync
+       > B) Retry the failed command
+       > C) Stop - I'll fix the issue first"
+       - If A: Skip remaining Beads steps.
+       - If B: Retry the command.
+       - If C: HALT and wait for user.
      - Generate new task key (e.g., `phase1_task3`)
      - Add the returned task ID to `beads_tasks` mapping in metadata.json
    - For each REMOVED task:
@@ -117,6 +133,4 @@ Report what was revised:
 
 5. **Add Revision Note to Epic:**
    - Run `bd note <beads_epic> "Revision [N]: <summary of changes>"`
-
-**CRITICAL:** If any `bd` command fails, log warning but do NOT halt revision.
 """

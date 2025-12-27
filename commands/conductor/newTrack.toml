@@ -161,14 +161,18 @@ CRITICAL: You must validate the success of every tool call. If any tool call fai
 10. **Announce Completion:** Inform the user:
     > "New track '<track_id>' has been created and added to the tracks file. You can now start implementation by running `/conductor:implement`."
 
-### 2.5 BEADS INTEGRATION (Optional)
+### 2.5 BEADS INTEGRATION
 
-**PROTOCOL: Sync track structure with Beads issue tracker if enabled.**
+**PROTOCOL: Sync track structure with Beads issue tracker.**
 
-1.  **Check Beads Configuration:**
-    -   Read `conductor/beads.json` to check if Beads integration is enabled.
-    -   If the file doesn't exist or `enabled` is false, skip this section silently.
-    -   If `bd` command is not available, skip silently.
+1.  **Check Beads Availability:**
+    -   Check if `bd` command exists: `which bd`
+    -   If command not found:
+        > "⚠️ Beads CLI (`bd`) is not installed. Beads provides persistent task memory across sessions."
+        > "A) Continue without Beads integration"
+        > "B) Stop - I'll install Beads first (see: https://github.com/elimisteve/beads)"
+        -   If user chooses A: Skip remaining Beads steps, continue to completion
+        -   If user chooses B: HALT and wait for user to install
 
 2.  **Create Epic for Track:**
     -   Map priority to Beads priority number:
@@ -214,5 +218,16 @@ CRITICAL: You must validate the success of every tool call. If any tool call fai
 
 6.  **Announce Beads Sync (if successful):**
     > "Track synced with Beads. Epic ID: <epic_id>. Use `bd tree <epic_id>` to view the task hierarchy."
+
+**ERROR HANDLING:** If any `bd` command fails during steps 2-5:
+-   Announce the specific error
+-   Ask user:
+    > "⚠️ Beads command failed: <error message>"
+    > "A) Continue without Beads integration - track files are already created"
+    > "B) Retry the failed command"
+    > "C) Stop - I'll fix the issue first"
+-   If A: Skip remaining Beads steps, announce track created without Beads sync
+-   If B: Retry the failed command
+-   If C: HALT and wait for user
 
 """

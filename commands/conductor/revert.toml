@@ -122,13 +122,21 @@ Your workflow MUST anticipate and handle common non-linear Git histories, such a
 
 ---
 
-## 6.0 BEADS SYNC (Optional)
+## 6.0 BEADS SYNC
 
-**PROTOCOL: Sync revert action with Beads if enabled.**
+**PROTOCOL: Sync revert action with Beads.**
 
-1. **Check Beads Config:**
-   - Read `conductor/beads.json`
-   - If file doesn't exist or `enabled: false`, skip this section
+1. **Check Beads CLI:**
+   - Execute `which bd` to check if the Beads CLI is available
+   - If `bd` is not found, present the following prompt:
+     > "⚠️ Beads CLI (`bd`) is not installed. Beads provides persistent task memory across sessions.
+     > A) Continue without Beads sync
+     > B) Stop - I'll install Beads first
+     >
+     > Please respond with A or B."
+     - **If A:** Skip remaining Beads steps.
+     - **If B:** HALT and wait for user to install Beads.
+   - If `bd` is found, continue to reopen Beads tasks.
 
 2. **Reopen Beads Tasks:**
    - Read `beads_tasks` mapping from track's metadata.json
@@ -136,6 +144,14 @@ Your workflow MUST anticipate and handle common non-linear Git histories, such a
      - Generate task key from phase/task index (e.g., `phase1_task2`)
      - Look up `beads_task_id` from the mapping
      - If found, run: `bd reopen <beads_task_id> --reason "Reverted in Conductor"`
+   - **Error Handling:** If `bd` command fails:
+     > "⚠️ Beads command failed: <error message>
+     > A) Continue without Beads sync
+     > B) Retry the failed command
+     > C) Stop - I'll fix the issue first"
+     - If A: Skip remaining Beads steps.
+     - If B: Retry the command.
+     - If C: HALT and wait for user.
    - For reverted phases:
      - Iterate through all tasks in that phase
      - Reopen each using the same lookup pattern
@@ -150,7 +166,5 @@ Your workflow MUST anticipate and handle common non-linear Git histories, such a
    - If entire track reverted:
      - Option A: Close epic with reason "Track reverted"
      - Option B: Reopen all tasks in epic
-
-**CRITICAL:** If `bd` commands fail, log warning but do NOT halt revert. Git revert is the primary action.
 """
 

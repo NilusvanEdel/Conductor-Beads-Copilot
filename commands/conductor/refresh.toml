@@ -141,16 +141,32 @@ Scope: [scope]
 
 ---
 
-## 11.0 BEADS DRIFT CHECK (Optional)
+## 11.0 BEADS DRIFT CHECK
 
-**PROTOCOL: Include Beads status in drift analysis if enabled.**
+**PROTOCOL: Include Beads status in drift analysis.**
 
-1. **Check Beads Config:**
-   - Read `conductor/beads.json`
-   - If file doesn't exist or `enabled: false`, skip this section
+1. **Check Beads CLI:**
+   - Execute `which bd` to check if the Beads CLI is available
+   - If `bd` is not found, present the following prompt:
+     > "⚠️ Beads CLI (`bd`) is not installed. Beads provides persistent task memory across sessions.
+     > A) Continue refresh without Beads checks
+     > B) Stop - I'll install Beads first
+     >
+     > Please respond with A or B."
+     - **If A:** Skip remaining Beads steps.
+     - **If B:** HALT and wait for user to install Beads.
+   - If `bd` is found, continue to analyze Beads drift.
 
 2. **Analyze Beads vs Conductor Drift:**
    - Compare Beads task statuses with plan.md markers
+   - **Error Handling:** If any `bd` command fails:
+     > "⚠️ Beads command failed: <error message>
+     > A) Continue refresh without Beads checks
+     > B) Retry the failed command
+     > C) Stop - I'll fix the issue first"
+     - If A: Skip remaining Beads steps.
+     - If B: Retry the command.
+     - If C: HALT and wait for user.
    - Identify:
      - Tasks marked done in Beads but `[ ]` in plan.md
      - Tasks marked `[x]` in plan.md but open in Beads
@@ -173,6 +189,4 @@ Scope: [scope]
 5. **Apply Sync:**
    - If A: Update plan.md markers to match Beads
    - If B: Run `bd update` commands to match plan.md
-
-**CRITICAL:** If `bd` commands fail, log warning but continue refresh.
 """

@@ -16,7 +16,7 @@ This spec defines how Conductor's context-driven development methodology integra
 1. **Conductor owns planning** - Specs, product vision, and phase organization
 2. **Beads owns execution** - Task tracking, dependencies, and persistent memory
 3. **Bidirectional sync** - Changes in either system reflect in both
-4. **Graceful degradation** - Works with only Conductor if Beads unavailable
+4. **Graceful degradation** - If Beads unavailable, user can choose to continue without it
 
 ## Architecture
 
@@ -336,7 +336,7 @@ Skill activation checks:
 
 3. **Skill loading** - Load both skills separately or create unified `conductor-beads` skill?
 
-4. **Fallback behavior** - If `bd` not installed, silent skip or prompt to install?
+4. **Fallback behavior** - ~~If `bd` not installed, silent skip or prompt to install?~~ **Resolved**: Always attempt Beads; prompt user to choose if unavailable.
 
 ## References
 

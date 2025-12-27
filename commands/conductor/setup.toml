@@ -325,29 +325,45 @@ CRITICAL: When determining model complexity, ALWAYS select the "flash" model, re
     -   The workflow file that was copied.
 2.  **Transition to initial plan and track generation:** Announce that the initial setup is complete and you will now proceed to define the first track for the project.
 
-### 2.7 BEADS INTEGRATION (Optional)
-1.  **Check for Beads CLI:** Execute `bd --version` to check if the Beads CLI is available.
-    -   If the command fails or `bd` is not found, skip this section entirely and proceed to Section 3.0.
-    -   If `bd` is available, continue to the next step.
+### 2.7 BEADS INTEGRATION
+1.  **Check for Beads CLI:** Execute `which bd` to check if the Beads CLI is available.
+    -   If `bd` is not found, present the following prompt:
+        > "⚠️ Beads CLI (`bd`) is not installed. Beads provides persistent task memory across sessions.
+        > A) Continue without Beads integration
+        > B) Stop - I'll install Beads first
+        >
+        > Please respond with A or B."
+        -   **If A:** Set `beads_available` to false and proceed to Section 3.0.
+        -   **If B:** HALT and wait for user to install Beads.
+    -   If `bd` is found, set `beads_available` to true and continue to the next step.
 
-2.  **Ask User for Beads Integration:** Present the following prompt to the user:
-    > "Beads detected. Would you like to enable Beads integration for persistent task memory?
-    > A) Yes - Full integration (commits .beads/ to repo)
+2.  **Ask User for Beads Integration Mode:** Present the following prompt to the user:
+    > "Beads CLI detected. Choose integration mode for persistent task memory:
+    > A) Full integration - commits .beads/ to repo
     > B) Stealth mode - Local only (use bd init --stealth)
-    > C) No - Skip Beads integration
+    > C) Skip Beads integration
     >
     > Please respond with A, B, or C."
 
 3.  **Handle User Response:**
-    -   **If C (No):** Announce that Beads integration is skipped and proceed to Section 3.0.
-    -   **If A (Yes - Full integration):**
+    -   **If C (Skip):** Announce that Beads integration is skipped and proceed to Section 3.0.
+    -   **If A (Full integration):**
         -   Execute `bd init` in the project root.
+        -   **Error Handling:** If the command fails:
+            > "⚠️ Beads command failed: <error message>
+            > A) Continue without Beads integration
+            > B) Retry the failed command
+            > C) Stop - I'll fix the issue first"
+            -   If A: Skip remaining Beads steps and proceed to Section 3.0.
+            -   If B: Retry the command.
+            -   If C: HALT and wait for user.
         -   Set `beads_mode` to `"normal"`.
     -   **If B (Stealth mode):**
         -   Execute `bd init --stealth` in the project root.
+        -   **Error Handling:** Same as above.
         -   Set `beads_mode` to `"stealth"`.
 
-4.  **Create Beads Configuration:** If A or B was selected, create `conductor/beads.json` with the following content (replace `<beads_mode>` with the appropriate value):
+4.  **Create Beads Configuration:** If A or B was selected and succeeded, create `conductor/beads.json` with the following content (replace `<beads_mode>` with the appropriate value):
     ```json
     {
       "enabled": true,

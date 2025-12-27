@@ -45,7 +45,7 @@ Verify installation:
 bd --version
 ```
 
-> **Note:** Beads is optional but highly recommended. Conductor works standalone, but loses cross-session memory without Beads.
+> **Note:** Beads integration is always attempted for persistent memory. If the `bd` CLI is unavailable or fails, you'll be prompted to choose whether to continue without it.
 
 ---
 
@@ -117,7 +117,7 @@ This creates the `conductor/` directory with:
 - `workflow.md` - Development standards (TDD, commits)
 - `tracks.md` - Master track list
 
-### Step 2: Initialize Beads (Recommended)
+### Step 2: Initialize Beads
 
 After Conductor setup, initialize Beads for persistent memory:
 
