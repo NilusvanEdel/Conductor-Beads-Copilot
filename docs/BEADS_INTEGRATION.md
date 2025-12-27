@@ -141,10 +141,9 @@ Combined Workflow:
    - Refactor
 
 5. On completion:
-   bd done bd-a3f8.1 --note "Implemented JWT auth tests, 95% coverage"
+   bd close bd-a3f8.1 --reason "Implemented JWT auth tests, 95% coverage. commit: abc123"
    
 6. Conductor updates plan.md with commit SHA
-   bd note bd-a3f8.1 "commit: abc123"
 ```
 
 ### Phase 4: Status & Progress (`/conductor-status` + `bd show`)
@@ -194,23 +193,58 @@ After context compaction or new session:
 ```
 Agent Session Start:
 1. bd ready                    # What can I work on?
-2. bd show bd-a3f8.1 --notes   # What was I doing?
-3. Load conductor/tracks/auth_20241226/spec.md for context
-4. Resume work
+2. bd show bd-a3f8.1           # Get full context: notes, design, acceptance
+3. Read notes for: COMPLETED, IN PROGRESS, NEXT, KEY DECISIONS
+4. Load conductor/tracks/auth_20241226/spec.md for context
+5. Resume work
 ```
 
 Beads' persistent notes survive conversation compaction, while Conductor's markdown provides human-readable context.
+
+### Structured Notes Format
+
+When updating notes for session resume, use this format:
+
+```bash
+bd update <epic_id> --notes "COMPLETED: Phase 1 - Auth tests
+KEY DECISION: Using RS256 for JWT signing (enables key rotation)
+IN PROGRESS: Phase 2 - Middleware implementation
+NEXT: Implement token validation
+BLOCKER: None
+DISCOVERED: Found race condition in token refresh (created bd-xyz)"
+```
+
+| Field | Purpose |
+|-------|---------|
+| `COMPLETED:` | What was finished (past tense, specific) |
+| `KEY DECISION:` | Important choices with rationale |
+| `IN PROGRESS:` | Current work |
+| `NEXT:` | Immediate next step (concrete action) |
+| `BLOCKER:` | What's blocking (if any) |
+| `DISCOVERED:` | New issues found during work |
+
+### Session End Protocol
+
+**CRITICAL**: Always run at session end or handoff:
+
+```bash
+bd update <epic_id> --notes "..." # Save context
+bd sync                           # Force sync to remote
+```
+
+This bypasses the 30-second debounce and ensures changes persist immediately.
 
 ## Command Mapping
 
 | Conductor Command | Beads Equivalent | Integration |
 |-------------------|------------------|-------------|
 | `/conductor-setup` | `bd init` | Run both |
-| `/conductor-newtrack` | `bd create` (epic) | Create track + epic |
-| `/conductor-implement` | `bd ready`, `bd update` | Query ready, track progress |
-| `/conductor-status` | `bd ready`, `bd show` | Combine outputs |
-| `/conductor-block` | `bd update --status blocked` | Sync both |
-| `/conductor-skip` | `bd update --status wontfix` | Mark in both |
+| `/conductor-newtrack` | `bd create` (epic + tasks) | Create track + epic with `--design`, `--acceptance` |
+| `/conductor-implement` | `bd ready`, `bd update`, `bd close` | Query ready, track progress, complete |
+| `/conductor-status` | `bd ready`, `bd show` | Combine outputs, read notes for context |
+| `/conductor-block` | `bd update --status blocked` | Sync both with structured notes |
+| `/conductor-skip` | `bd close` or `bd update` | Mark in both based on skip reason |
+| `/conductor-handoff` | `bd update --notes`, `bd sync` | Save context + force sync |
 | `/conductor-revert` | `bd reopen` | Sync status |
 | `/conductor-archive` | `bd compact` | Archive track + compact |
 
@@ -225,7 +259,7 @@ When `plan.md` is edited:
 
 ### Beads → Conductor (Status Changes)
 
-When `bd done` or `bd update` runs:
+When `bd close` or `bd update` runs:
 1. Update corresponding task in `plan.md`
 2. Add commit SHA if available
 3. Update `tracks.md` status if epic complete

@@ -230,9 +230,11 @@ Shows:
 |---------|-------------|
 | `bd ready` | List tasks with no blockers |
 | `bd create "Title" -p 0` | Create a P0 (highest priority) task |
-| `bd show <id>` | View task details and notes |
-| `bd done <id>` | Mark task complete |
+| `bd show <id>` | View task details, notes, and context |
+| `bd close <id> --reason "Done"` | Complete task with summary |
+| `bd update <id> --notes "context"` | Add notes for session resume |
 | `bd dep add <child> <parent>` | Add dependency between tasks |
+| `bd sync` | Force sync to remote (use at session end) |
 
 ---
 
@@ -370,8 +372,8 @@ flowchart LR
     subgraph NEW_SESSION[New Session / After Compaction]
         A[Start] --> B["bd ready"]
         B --> C[Find ready tasks]
-        C --> D["bd show <id> --notes"]
-        D --> E[Load context from notes]
+        C --> D["bd show <id>"]
+        D --> E[Load context from notes/design]
     end
 
     subgraph RESUME[Resume Work]
@@ -381,9 +383,9 @@ flowchart LR
     end
 
     subgraph COMPLETE[On Completion]
-        H --> I["bd done <id>"]
-        I --> J["bd note <id> 'commit: abc123'"]
-        J --> K[Update plan.md]
+        H --> I["bd close <id> --reason"]
+        I --> J[Update plan.md with SHA]
+        J --> K["bd sync"]
     end
 ```
 
