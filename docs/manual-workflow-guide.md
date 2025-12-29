@@ -490,7 +490,7 @@ Step 2: Select tracks to archive
 Step 3: Confirm
 
 Step 4: Tracks moved to conductor/archive/
-   - If Beads: bd compact for archived epic
+   - If Beads: bd compact --auto for archived epic
 ```
 
 ---

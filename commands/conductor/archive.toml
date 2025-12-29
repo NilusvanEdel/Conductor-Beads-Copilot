@@ -40,7 +40,7 @@ Leverage Beads' semantic memory decay to keep context manageable.
 3. If `bd` is found, for each archived track:
    - Read `conductor/tracks/<track_id>/metadata.json`
    - If `beads_epic` field exists:
-     - Run `bd compact <epic_id>` to summarize and compact completed tasks
+     - Run `bd compact --auto <epic_id>` to summarize and compact completed tasks
    - **Error Handling:** If `bd` command fails:
      > "⚠️ Beads command failed: <error message>
      > A) Continue archive without Beads compaction
@@ -56,7 +56,7 @@ Leverage Beads' semantic memory decay to keep context manageable.
 > A) Yes - Compact all completed tasks project-wide
 > B) No - Only compact archived tracks"
 
-If A selected: Run `bd compact --all`
+If A selected: Run `bd compact --auto --all`
 
 ## 5.0 COMMIT
 Commit changes: `conductor(archive): Archive N completed tracks`

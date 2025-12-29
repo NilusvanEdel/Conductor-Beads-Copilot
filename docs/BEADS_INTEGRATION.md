@@ -247,7 +247,7 @@ This bypasses the 30-second debounce and ensures changes persist immediately.
 | `/conductor-skip` | `bd close` or `bd update` | Mark in both based on skip reason |
 | `/conductor-handoff` | `bd update --notes`, `bd sync` | Save context + force sync |
 | `/conductor-revert` | `bd reopen` | Sync status |
-| `/conductor-archive` | `bd compact` | Archive track + compact |
+| `/conductor-archive` | `bd compact --auto` | Archive track + compact |
 
 ## Data Synchronization
 
