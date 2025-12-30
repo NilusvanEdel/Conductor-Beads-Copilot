@@ -61,6 +61,7 @@ flowchart TD
 |----------|----------|
 | **Standard** | `setup` → `bd init` → `newtrack` → `implement` → `archive` |
 | **Multi-Section** | `implement` → `handoff` → *(new session)* → `implement` |
+| **Parallel Tasks** | `newtrack` (enable parallel) → `implement` (spawns workers) |
 | **Session Resume** | `bd ready` → `bd show --notes` → `implement` |
 | **Blocked Task** | `block` → `skip` or wait → continue |
 | **Plan Changes** | `revise` → continue `implement` |

@@ -45,8 +45,20 @@ For each track's `plan.md`:
 2. Verify each phase has at least one task
 3. Check for invalid status markers (anything other than [ ], [~], [x], [!])
 4. If track status is [x], verify all tasks are [x]
+5. Validate parallel execution annotations if present
 
-### 2.6 State Files Check
+### 2.6 Parallel Execution Validation
+For tracks with parallel execution annotations:
+1. Check `<!-- execution: parallel -->` is after valid phase heading
+2. Verify all tasks in parallel phases have `<!-- files: ... -->` annotation
+3. Detect file conflicts (same file claimed by multiple tasks)
+4. Verify `<!-- depends: ... -->` references valid task IDs
+5. If `parallel_state.json` exists:
+   - Check for stale workers (no update in >60 min)
+   - Check for orphan file locks
+   - Verify worker count matches task count
+
+### 2.7 State Files Check
 1. Check `conductor/setup_state.json` if exists - verify valid JSON
 2. Check each `conductor/tracks/<track_id>/implement_state.json` if exists - verify valid JSON
 

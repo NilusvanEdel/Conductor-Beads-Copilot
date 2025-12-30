@@ -36,6 +36,19 @@ CRITICAL: This command preserves implementation context when you need to continu
     -   Read `conductor/tracks/<track_id>/spec.md`
     -   Read `conductor/tracks/<track_id>/plan.md`
     -   Read `conductor/tracks/<track_id>/implement_state.json` (if exists)
+    -   Check for `conductor/tracks/<track_id>/parallel_state.json`
+
+4.  **Parallel Execution Check:**
+    -   If `parallel_state.json` exists:
+        > "⚠️ This track has parallel workers currently running:"
+        > [List workers and their status from parallel_state.json]
+        > 
+        > "A) Wait for workers to complete before handoff"
+        > "B) Create handoff anyway (workers will continue)"
+        > "C) Cancel handoff"
+        -   If A: Monitor `parallel_state.json` until all workers complete, then proceed
+        -   If B: Include parallel state in handoff document, proceed
+        -   If C: HALT
 
 ---
 
@@ -338,6 +351,25 @@ CRITICAL: This command preserves implementation context when you need to continu
       "
       ```
 
-5.  **Announce Beads Sync:**
+5.  **Parallel Workers Handoff (if parallel_state.json exists):**
+    - For each active parallel worker, save Beads context:
+      ```bash
+      bd update <worker_beads_task_id> --notes "HANDOFF: Worker <id> state saved
+      STATUS: <in_progress|completed|pending>
+      FILES_OWNED: <exclusive files>
+      PROGRESS: <description of work done>
+      ASSIGNEE: <worker_id>" --json
+      ```
+    - Include parallel state summary in epic notes:
+      ```bash
+      bd update <beads_epic> --notes "...
+      PARALLEL_STATE: <N> workers, <M> completed, <K> in progress
+      WORKERS: <list of worker_ids and their status>" --json
+      ```
+
+6.  **Force Sync to Remote:**
+    - Run `bd sync` to ensure changes reach remote immediately
+
+7.  **Announce Beads Sync:**
     > "Handoff context saved to Beads. Context will survive conversation compaction."
 """

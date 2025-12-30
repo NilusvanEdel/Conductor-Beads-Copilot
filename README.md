@@ -189,6 +189,35 @@ The workflow:
 4. **Track progress** - Updates plan.md and Beads status
 5. **Verify** - Manual verification at phase boundaries
 
+### Parallel Task Execution (New!)
+
+For phases with independent tasks, Conductor can now execute them in parallel using sub-agents:
+
+```markdown
+## Phase 1: Core Setup
+<!-- execution: parallel -->
+
+- [ ] Task 1: Create auth module
+  <!-- files: src/auth/index.ts, src/auth/index.test.ts -->
+  
+- [ ] Task 2: Create config module
+  <!-- files: src/config/index.ts -->
+```
+
+**How it works:**
+1. During `/conductor-newtrack`, you'll be asked if you want parallel execution
+2. Tasks are analyzed for file conflicts and dependencies
+3. During `/conductor-implement`, parallel phases spawn sub-agents
+4. Each sub-agent works on exclusive files with TDD workflow
+5. Results are aggregated when all workers complete
+
+**Benefits:**
+- ⚡ Faster execution for independent tasks
+- 🔒 File locking prevents conflicts
+- 📊 State tracking via `parallel_state.json`
+
+See [Parallel Execution Design](docs/PARALLEL_EXECUTION.md) for details.
+
 ### Checking Status
 
 ```bash

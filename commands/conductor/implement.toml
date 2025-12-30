@@ -139,11 +139,109 @@ CRITICAL: You must validate the success of every tool call. If any tool call fai
         }
         ```
 
-5.  **Execute Tasks and Update Track Plan:**
-    a. **Announce:** State that you will now execute the tasks from the track's `plan.md` by following the procedures in `workflow.md`.
-    b. **Iterate Through Tasks:** You MUST now loop through each task in the track's `plan.md` one by one.
-    c. **Track Section Progress:** Maintain a count of tasks completed in the current section (since last handoff or session start).
-    d. **For Each Task, You MUST:**
+5.  **Determine Execution Mode and Execute Phases/Tasks:**
+    
+    a. **Parse Phase Dependencies and Build Phase Graph:**
+        - For each phase in plan.md, check for `<!-- depends: -->` annotation
+        - **If NO annotation:** Phase depends on previous phase (sequential, default)
+        - **If `<!-- depends: -->` (empty):** Phase has no dependencies (can start immediately)
+        - **If `<!-- depends: phase1, phase2 -->`:** Phase waits for listed phases only
+        - Build a phase dependency graph to determine which phases can run in parallel
+
+    a2. **Identify Ready Phases:**
+        - Find phases with no unmet dependencies (all dependent phases completed)
+        - If multiple phases are ready simultaneously, they can run in parallel
+        - Process ready phases (may be single or multiple)
+
+    b. **Parse Task Execution Mode (for current phase):**
+        - For the current phase in `plan.md`, check for `<!-- execution: parallel -->` annotation
+        - If found: Go to step 5c (Parallel Task Execution Flow)
+        - If not found or `<!-- execution: sequential -->`: Go to step 5d (Sequential Execution Flow)
+    
+    c. **PARALLEL TASK EXECUTION FLOW:**
+        
+        c1. **Parse Parallel Task Metadata:**
+            - For each task in the phase, extract:
+              - `<!-- files: path1, path2 -->` - Files this task owns exclusively
+              - `<!-- depends: task1, task2 -->` - Dependencies on other tasks in phase
+              - `<!-- parallel-group: groupName -->` - Optional grouping
+        
+        c2. **Build Dependency Graph:**
+            - Identify tasks with no `depends:` annotation (can start immediately)
+            - Identify dependent tasks (must wait for dependencies to complete)
+        
+        c3. **Detect File Conflicts:**
+            - Check if any two tasks claim the same file in `files:` annotation
+            - If conflicts detected:
+              > "⚠️ File conflict detected: [files] claimed by multiple tasks"
+              > "A) Make conflicting tasks sequential (recommended)"
+              > "B) Continue anyway - I'll handle manually"
+              > "C) Stop and revise plan"
+        
+        c4. **Initialize Parallel State:**
+            - Create `conductor/tracks/<track_id>/parallel_state.json`:
+            ```json
+            {
+              "phase": "<phase_name>",
+              "execution_mode": "parallel",
+              "started_at": "<timestamp>",
+              "workers": [],
+              "file_locks": {},
+              "completed_workers": 0,
+              "total_workers": <count>
+            }
+            ```
+        
+        c5. **Spawn Parallel Workers:**
+            - **If Beads enabled:** Pre-assign all parallel tasks:
+              ```bash
+              # For each parallel task
+              bd update <beads_task_id> --status in_progress \
+                --assignee worker_<N>_<name> \
+                --notes "PARALLEL WORKER: Started" \
+                --json
+              ```
+            - For each task with no unmet dependencies, spawn a sub-agent
+            - Record each spawned worker in `parallel_state.json` (include `beads_task_id`)
+            - Update `file_locks` with each worker's file ownership
+            - Worker prompt includes:
+              - Track/phase/task context + worker_id + beads_task_id
+              - Exclusive file ownership list
+              - TDD workflow instructions
+              - Success criteria (tests pass, coverage >80%, commit created)
+              - Instructions to update parallel_state.json on completion
+              - **Beads instructions:** `bd update`, `bd close`, `bd sync` after completion
+        
+        c6. **Monitor Worker Completion:**
+            - Periodically read `parallel_state.json`
+            - When a worker completes (status = "completed"):
+              - Check if dependent tasks can now start
+              - Spawn newly unblocked workers
+              - Increment `completed_workers` count
+            - Handle worker failures (status = "failed" or timeout after 60 minutes)
+            - **If Beads enabled on failure:** Clear assignee: `bd update <id> --assignee "" --status open --json`
+        
+        c7. **Aggregate Results:**
+            - Wait until all workers complete
+            - **If Beads enabled:** Force sync and verify:
+              ```bash
+              bd sync
+              bd ready --epic <epic_id> --json  # Verify all complete
+              bd update <epic_id> --notes "PARALLEL PHASE COMPLETE: <phase>
+              WORKERS: <N> succeeded
+              COMMITS: <sha_list>" --json
+              ```
+            - Update `plan.md` with all task completions and commit SHAs
+            - Delete `parallel_state.json`
+            - Check phase graph: are there other ready phases to process?
+            - If yes: Go back to step 5a2 to process next ready phase(s)
+            - If no more phases: Proceed to step 6 (Finalize Track)
+    
+    d. **SEQUENTIAL EXECUTION FLOW:**
+        d1. **Announce:** State that you will now execute the tasks from the track's `plan.md` by following the procedures in `workflow.md`.
+        d2. **Iterate Through Tasks:** You MUST now loop through each task in the track's `plan.md` one by one.
+        d3. **Track Section Progress:** Maintain a count of tasks completed in the current section (since last handoff or session start).
+        d4. **For Each Task, You MUST:**
         i. **Defer to Workflow:** The `workflow.md` file is the **single source of truth** for the entire task lifecycle. You MUST now read and execute the procedures defined in the "Task Workflow" section of the `workflow.md` file you have in your context. Follow its steps for implementation, testing, and committing precisely.
         i-a. **Beads Task Start (If Enabled):** After marking task `[~]` in progress:
             - **ONLY if `beads_enabled` is true:**
@@ -168,8 +266,10 @@ CRITICAL: You must validate the success of every tool call. If any tool call fai
         iii. **On Phase Completion:** When all tasks in a phase are complete:
             - Add phase name to `completed_phases` array
             - Reset `current_task_index` to 0
-            - Increment `current_phase_index`
-            - Update `current_phase` to next phase name
+            - **Check phase graph for next ready phases:**
+              - If other phases now have all dependencies met → Go back to step 5a2
+              - If next sequential phase is ready → Process it
+              - If all phases complete → Proceed to step 6 (Finalize Track)
         iv. **Auto-Handoff Detection:** After completing a task, check if handoff should be suggested:
             - If 5+ tasks completed in current section without handoff
             - If at a phase boundary with significant remaining work (>50% tasks remaining)
@@ -190,7 +290,7 @@ CRITICAL: You must validate the success of every tool call. If any tool call fai
                 - If A: Set `beads_enabled` to false and continue.
                 - If B: Retry the command.
                 - If C: HALT and wait for user.
-    e. **Handle Blocked Tasks:**
+    e. **Handle Blocked Tasks (Sequential Flow):**
         - If a task is marked with `[!]`, announce: "⚠️ Task is blocked: [reason]"
         - Ask user:
           > "This task is marked as blocked. What would you like to do?

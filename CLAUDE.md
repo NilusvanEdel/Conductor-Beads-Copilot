@@ -92,6 +92,14 @@ A track is a logical unit of work (feature or bug fix). Each track has:
 - Status markers: `[ ]` new, `[~]` in progress, `[x]` completed, `[!]` blocked, `[-]` skipped
 - Own directory with spec, plan, metadata, and state files
 
+### Parallel Execution (New!)
+Phases can execute tasks in parallel using sub-agents:
+- Annotate phases with `<!-- execution: parallel -->`
+- Tasks have `<!-- files: ... -->` for exclusive file ownership
+- Use `<!-- depends: taskN -->` for task dependencies
+- Coordinator spawns workers via Task() tool
+- State tracked in `parallel_state.json`
+
 ### Task Workflow (TDD)
 1. Select task from plan.md (or use `bd ready` if Beads enabled)
 2. Mark `[~]` in progress (sync to Beads: `bd update <id> --status in_progress`)

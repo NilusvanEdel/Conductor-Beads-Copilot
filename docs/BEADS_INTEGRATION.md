@@ -318,6 +318,149 @@ Skill activation checks:
 - [ ] Cross-track dependencies via Beads
 - [ ] Team sync via git + Beads
 
+## Parallel Execution Integration
+
+Beads provides robust coordination for Conductor's parallel task execution feature.
+
+### Why Beads is Ideal for Parallel Execution
+
+| Feature | Benefit for Parallel Execution |
+|---------|-------------------------------|
+| **Hash-based IDs** | No collision when parallel workers create tasks |
+| **Assignee field** | Each worker claims exclusive ownership |
+| **SQLite transactions** | Serializes concurrent writes safely |
+| **`bd ready --assignee`** | Workers query only their assigned tasks |
+| **`bd sync`** | Force sync bypasses 30s debounce |
+
+### Parallel Workflow with Beads
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     COORDINATOR                                   │
+│  1. Parse parallel phase from plan.md                            │
+│  2. For each parallel task:                                      │
+│     bd update <task_id> --status in_progress                     │
+│       --assignee worker_<N>_<name> --json                        │
+│  3. Spawn workers via Task()                                     │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+            ┌─────────────────┼─────────────────┐
+            ▼                 ▼                 ▼
+    ┌─────────────┐   ┌─────────────┐   ┌─────────────┐
+    │  Worker 1   │   │  Worker 2   │   │  Worker 3   │
+    │  assignee:  │   │  assignee:  │   │  assignee:  │
+    │  worker_1   │   │  worker_2   │   │  worker_3   │
+    │             │   │             │   │             │
+    │ bd update   │   │ bd update   │   │ bd update   │
+    │ bd close    │   │ bd close    │   │ bd close    │
+    │ bd sync     │   │ bd sync     │   │ bd sync     │
+    └─────────────┘   └─────────────┘   └─────────────┘
+            │                 │                 │
+            └─────────────────┼─────────────────┘
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                     COORDINATOR                                   │
+│  4. bd sync (force sync all)                                     │
+│  5. bd ready --epic <id> (verify all complete)                   │
+│  6. Aggregate results to plan.md                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Worker Commands
+
+**At Worker Start:**
+```bash
+# Worker claims its assigned task
+bd update <task_id> --status in_progress \
+  --assignee <worker_id> \
+  --notes "WORKER: <worker_id>
+TASK: <task_description>
+FILES: <exclusive_files>
+STARTED: <timestamp>" \
+  --json
+```
+
+**During Execution (discovered issues):**
+```bash
+# Link discovered issues to current task
+bd create "Found race condition" \
+  -t bug -p 2 \
+  --deps discovered-from:<current_task_id> \
+  --assignee <worker_id> \
+  --json
+```
+
+**At Worker Completion:**
+```bash
+# Complete task with structured notes
+bd update <task_id> --notes "WORKER: <worker_id>
+STATUS: Completed
+COMMIT: <sha>
+DURATION: <time>
+FILES_MODIFIED: <list>" --json
+
+bd close <task_id> --reason "Task completed" --json
+
+# CRITICAL: Force sync after parallel work
+bd sync
+```
+
+### Coordinator Commands
+
+**Before Spawning Workers:**
+```bash
+# Pre-assign all parallel tasks
+for task_id in <parallel_tasks>:
+    bd update $task_id --status in_progress \
+      --assignee worker_<N>_<name> --json
+```
+
+**After All Workers Complete:**
+```bash
+# Force sync to capture all worker updates
+bd sync
+
+# Verify completion
+bd ready --epic <epic_id> --json
+# Should return empty (all tasks done) or only sequential tasks
+
+# Update epic notes for session resume
+bd update <epic_id> --notes "PARALLEL PHASE COMPLETE: <phase_name>
+WORKERS: <N> workers, all succeeded
+COMMITS: <list of commit SHAs>
+NEXT: <next_sequential_phase>" --json
+```
+
+### Concurrent Safety Guarantees
+
+| Scenario | How Beads Handles It |
+|----------|---------------------|
+| Multiple workers update simultaneously | SQLite BEGIN IMMEDIATE serializes writes |
+| Same task updated by two workers | Avoided by unique `--assignee` per task |
+| Parallel `bd create` calls | Hash-based IDs guarantee no collision |
+| Rapid status changes | 30s debounce batches, `bd sync` forces immediate |
+| Worker crashes mid-update | Coordinator detects timeout, clears assignee for retry |
+
+### Error Recovery
+
+**Worker Timeout/Failure:**
+```bash
+# Coordinator detects worker hasn't updated in 60 min
+bd update <task_id> --status open \
+  --notes "Worker <id> timed out. Reassigning." \
+  --assignee "" \
+  --json
+```
+
+**Dependency Conflict (rare):**
+```bash
+# If parallel worker needs dependency not in its scope
+# Worker reports conflict, coordinator resolves
+bd update <task_id> --status blocked \
+  --notes "BLOCKED: Needs <dependency> not assigned to this worker" \
+  --json
+```
+
 ## Benefits
 
 | Capability | Conductor Only | With Beads |
