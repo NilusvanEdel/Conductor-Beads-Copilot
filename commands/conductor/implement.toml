@@ -243,6 +243,7 @@ CRITICAL: You must validate the success of every tool call. If any tool call fai
         d3. **Track Section Progress:** Maintain a count of tasks completed in the current section (since last handoff or session start).
         d4. **For Each Task, You MUST:**
         i. **Defer to Workflow:** The `workflow.md` file is the **single source of truth** for the entire task lifecycle. You MUST now read and execute the procedures defined in the "Task Workflow" section of the `workflow.md` file you have in your context. Follow its steps for implementation, testing, and committing precisely.
+        **CRITICAL: NEVER run `git push`. All commits stay local. Users decide when to push to remote repositories.**
         i-a. **Beads Task Start (If Enabled):** After marking task `[~]` in progress:
             - **ONLY if `beads_enabled` is true:**
                 - Generate task key from phase index and task index (e.g., `phase1_task1` for first task in first phase)

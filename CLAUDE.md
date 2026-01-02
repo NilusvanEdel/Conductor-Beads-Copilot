@@ -111,6 +111,8 @@ Phases can execute tasks in parallel using sub-agents:
 8. Update plan.md with commit SHA
 9. If Beads: `bd done <id> --note "commit: <sha>"`
 
+**Important:** All commits stay local. Conductor never pushes automatically - users decide when to push.
+
 ### Beads Integration
 When Beads is enabled (`conductor/beads.json` with `enabled: true`):
 - Each track becomes a Beads epic

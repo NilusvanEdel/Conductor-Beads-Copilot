@@ -324,6 +324,12 @@ A task is complete when:
 - [ ] Database migrations ready
 - [ ] Backup created
 
+### Git Push Policy
+**IMPORTANT:** Conductor commits locally but **NEVER pushes automatically**.
+- All commits remain local until the user explicitly pushes
+- Users decide when and how to push to remote repositories
+- This allows for commit squashing, rebase, or other git workflows before pushing
+
 ### Deployment Steps
 1. Merge feature branch to main
 2. Tag release with version

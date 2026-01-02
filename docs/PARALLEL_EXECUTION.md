@@ -228,6 +228,7 @@ Task({
     2. Only modify files in your owned list
     3. On completion, update parallel_state.json with your status
     4. Commit with message: "feat(${scope}): ${description}"
+    5. NEVER run git push - all commits stay local
     
     ## Spec Context
     ${spec_excerpt}

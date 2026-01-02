@@ -259,8 +259,10 @@ Step 6: For each task, follow TDD workflow:
    e) Refactor if needed
    f) Verify coverage (>80%)
    g) Commit with conventional message
-   h) Update plan.md: [~] → [x] + SHA
-   i) Update Beads: bd done <task_id> --note "commit: <sha>"
+       h) Update plan.md: [~] → [x] + SHA
+       i) Update Beads: bd done <task_id> --note "commit: <sha>"
+       
+       **Note: All commits stay local. Users decide when to push.**
 
 Step 7: Phase completion
    - Run full test suite

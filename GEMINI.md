@@ -19,3 +19,7 @@ When Beads is enabled:
 - Use `bd ready` to find tasks with no blockers
 - Each Conductor track maps to a Beads epic
 - Notes in Beads survive context compaction
+
+## Git Policy
+
+**Important**: Conductor commits locally but never pushes automatically. Users decide when and how to push to remote repositories.
