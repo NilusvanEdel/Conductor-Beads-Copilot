@@ -408,33 +408,53 @@ gt hook
 When a polecat is spawned via `gt sling`, here's what happens inside:
 
 ```bash
-# 1. Check hook - what am I working on?
+# 1. Get AI-optimized context (CRITICAL: run first)
+bd prime
+
+# 2. Check hook - what am I working on?
 gt hook
 
-# 2. Find ready work from beads
+# 3. Find ready work from beads
 bd ready
 
-# 3. Start work on a task
-bd update <task-id> --status in_progress
+# 4. Start work with context notes
+bd update <task-id> --status in_progress \
+  --notes "Started: <task_description>
+APPROACH: <planned_approach>"
 
-# 4. Execute TDD workflow
-#    - Write failing tests
-#    - Implement to pass
+# 5. Execute TDD workflow
+#    - Write failing tests (Red)
+#    - Implement to pass (Green)
 #    - Refactor
+#    - Verify coverage
 #    - Commit changes
 
-# 5. Add notes (survives compaction!)
-bd update <task-id> --notes "Implemented JWT auth with RS256. Key files: auth.ts, auth.test.ts"
+# 6. Add progress notes (CRITICAL for compaction survival)
+bd update <task-id> --notes "COMPLETED: <what_was_done>
+KEY DECISION: <important_choice_with_rationale>
+FILES CHANGED: <list_of_files>
+COMMIT: <sha>"
 
-# 6. Complete the task
-bd close <task-id> --reason "commit: abc123"
+# 7. Complete with auto-advance
+bd close <task-id> --continue --reason "commit: <sha>"
 
-# 7. Session cycling (if context getting full)
+# 8. Session cycling (if context getting full)
 gt handoff                    # Session cycles, sandbox persists
 
-# 8. When all work done, signal completion
+# 9. When all work done, signal completion
 gt done --exit                # Exit session, Witness handles cleanup
 ```
+
+### Notes Format for Compaction Survival
+
+Write notes as if explaining to a future Claude with zero context:
+
+- `COMPLETED:` - What was finished (past tense, specific)
+- `KEY DECISION:` - Important choices made (with rationale)
+- `IN PROGRESS:` - Current work (if interrupted)
+- `NEXT:` - Immediate next step (concrete action)
+- `BLOCKER:` - What's blocking (if any)
+- `DISCOVERED:` - New issues found during work (with beads ID)
 
 ### Polecat Lifecycle Layers
 

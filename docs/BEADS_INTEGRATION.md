@@ -128,23 +128,34 @@ User: /conductor-implement auth_20241226
 
 Combined Workflow:
 1. Conductor loads spec.md and plan.md for context
-2. Query Beads for ready tasks:
+2. Get AI-optimized context:
+   bd prime
+   
+3. Query Beads for ready tasks:
    bd ready --epic bd-a3f8
    → Shows tasks with no blockers
 
-3. Select task and mark in-progress:
-   bd update bd-a3f8.1 --status in_progress
+4. Select task and mark in-progress with context:
+   bd update bd-a3f8.1 --status in_progress \
+     --notes "Started: Write auth tests
+   APPROACH: JWT with RS256 for key rotation"
 
-4. Execute TDD workflow (from Conductor):
-   - Write failing tests
-   - Implement to pass
+5. Execute TDD workflow (from Conductor):
+   - Write failing tests (Red)
+   - Implement to pass (Green)
    - Refactor
 
-5. On completion:
-   bd update bd-a3f8.1 --notes "Implemented JWT auth tests, 95% coverage. commit: abc123"
-   bd close bd-a3f8.1 --reason "Task completed"
+6. On completion, add structured notes:
+   bd update bd-a3f8.1 --notes "COMPLETED: JWT auth tests
+   KEY DECISION: RS256 over HS256 for key rotation
+   FILES CHANGED: auth.test.ts, auth.ts
+   COMMIT: abc123"
    
-6. Conductor updates plan.md with commit SHA
+7. Close with auto-advance:
+   bd close bd-a3f8.1 --continue --reason "Task completed"
+   (The --continue flag auto-advances to next step)
+   
+8. Conductor updates plan.md with commit SHA
 ```
 
 ### Phase 4: Status & Progress (`/conductor-status` + `bd show`)

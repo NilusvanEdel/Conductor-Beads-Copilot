@@ -105,6 +105,7 @@ CRITICAL: You must validate the success of every tool call. If any tool call fai
         - **If B:** HALT and wait for user to install Beads.
     c. **If `bd` is found:**
         - Set `beads_enabled` to true
+        - **Run `bd prime`** to get AI-optimized workflow context
         - Read `conductor/tracks/<track_id>/metadata.json` for `beads_epic` and `beads_tasks` fields
         - Store `beads_tasks` mapping (maps plan task names to Beads IDs like `"phase1_task1": "bd-a3f8.1.1"`)
         - If `beads_epic` exists:
@@ -280,8 +281,13 @@ CRITICAL: You must validate the success of every tool call. If any tool call fai
             - **ONLY if `beads_enabled` is true:**
                 - Look up `beads_task_id` from `beads_tasks` mapping (same key as i-a)
                 - If found:
-                  - First add completion notes: `bd update <beads_task_id> --notes "COMPLETED: commit <commit_sha> | <task_description> | Files: <modified_files_summary>"`
-                  - Then close the task: `bd close <beads_task_id> --reason "Task completed"`
+                  - Add structured completion notes:
+                    `bd update <beads_task_id> --notes "COMPLETED: <task_description>
+                    COMMIT: <commit_sha>
+                    FILES CHANGED: <modified_files_summary>
+                    KEY DECISION: <if any>"`
+                  - Close with auto-advance: `bd close <beads_task_id> --continue --reason "Task completed"`
+                    (The `--continue` flag auto-advances to next step if available)
                 - This automatically unblocks dependent tasks in Beads
             - **Error Handling:** If `bd` command fails:
                 > "⚠️ Beads command failed: <error message>

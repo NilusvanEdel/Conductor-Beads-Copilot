@@ -35,6 +35,20 @@ fi
 
 ## How It Works (when Beads is enabled)
 
+### Session Protocol (Enhanced - Based on Beads v0.43+ Best Practices)
+
+The recommended session workflow for maximum context preservation:
+
+1. `bd prime` — Load AI-optimized workflow context (run first!)
+2. `bd ready` — Find unblocked work
+3. `bd show <id>` — Get full context and audit trail
+4. `bd update <id> --status in_progress` — Start work
+5. **Add notes as you work** (critical for compaction survival)
+6. `bd close <id> --continue` — Complete and auto-advance to next step
+7. `bd sync` — Persist to git (always run at session end)
+
+**Key insight:** `bd close --continue` automatically marks the next step as in_progress, reducing commands from 3 to 1.
+
 ### Ownership Model
 
 | Component | Conductor Owns | Beads Owns |
@@ -126,6 +140,57 @@ bd ready --epic <epic_id>
 | **Task blocked** | `bd update --status blocked` | Block reason |
 | **Phase complete** | `bd update --notes` | COMPLETED/IN PROGRESS/NEXT summary |
 | **Handoff** | `bd update --notes` | Full session context for recovery |
+
+## Chemistry Patterns (Molecules)
+
+Beads supports workflow templates called "molecules" for multi-step work:
+
+### When to Use Molecules vs Direct Tasks
+
+| Use Case | Approach | Command |
+|----------|----------|---------|
+| Single task | Direct Beads task | `bd create` + `bd close` |
+| Multi-step workflow | Persistent molecule | `bd mol pour <proto>` |
+| Ephemeral/patrol work | Wisp (vapor) | `bd mol wisp <proto>` |
+| Reusable template | Formula → Proto | `bd cook <formula>` |
+
+### Molecule Navigation
+
+```bash
+# Where am I in the molecule?
+bd mol current
+
+# Close step and auto-advance to next
+bd close <step-id> --continue
+
+# Squash completed molecule to digest
+bd mol squash <molecule-id>
+```
+
+### Mol vs Wisp Decision Tree
+
+```
+Is this work permanent/auditable?
+├─ YES → Use `bd mol pour` (persistent, synced to git)
+│   └─ Examples: Feature tracks, bug fixes, releases
+│
+└─ NO → Use `bd mol wisp` (ephemeral, never synced)
+    └─ Examples: Patrol cycles, health checks, temp exploration
+```
+
+### Molecule Lifecycle
+
+```
+Formula (source TOML) ─── "Ice-9"
+    │
+    ▼ bd cook
+Protomolecule (frozen template) ─── Solid
+    │
+    ├─▶ bd mol pour ──▶ Mol (persistent) ──▶ bd squash ──▶ Digest
+    │
+    └─▶ bd mol wisp ──▶ Wisp (ephemeral) ──┬▶ bd squash ──▶ Digest
+                                           └▶ bd burn ──▶ (gone)
+```
 
 ## Configuration
 

@@ -96,6 +96,7 @@ Implement track: $ARGUMENTS
       - If B: HALT and wait for user
     - **If found:** Set `beads_enabled = true`
     - **Load Beads Context (if enabled):**
+      - **Run `bd prime`** to get AI-optimized workflow context
       - Read `conductor/tracks/<track_id>/metadata.json` for `beads_epic` and `beads_tasks` fields
       - Store `beads_tasks` mapping (maps plan task names to Beads IDs like `"phase1_task1": "bd-a3f8.1.1"`)
       - If `beads_epic` exists:
@@ -228,8 +229,10 @@ Implement track: $ARGUMENTS
                - Set commit_sha to your commit hash
                - Set completed_at to current timestamp
             6. If Beads enabled:
-               - bd update <beads_task_id> --notes 'COMPLETED: commit <sha>' --json
-               - bd close <beads_task_id> --reason 'Task completed' --json
+               - bd update <beads_task_id> --notes 'COMPLETED: <description>
+                 COMMIT: <sha>
+                 FILES CHANGED: <list>' --json
+               - bd close <beads_task_id> --continue --reason 'Task completed' --json
                - bd sync  # CRITICAL: Force sync
             
             ## Spec Context
@@ -315,8 +318,15 @@ Implement track: $ARGUMENTS
              - **ONLY if `beads_enabled` is true:**
                - Look up `beads_task_id` from `beads_tasks` mapping (same key as i-a)
                - If found:
-                 - First add completion notes: `bd update <beads_task_id> --notes "COMPLETED: commit <sha_7chars> - <description>"`
-                 - Then close the task: `bd close <beads_task_id> --reason "Task completed"`
+                 - Add structured completion notes:
+                   ```bash
+                   bd update <beads_task_id> --notes "COMPLETED: <description>
+                   COMMIT: <sha_7chars>
+                   FILES CHANGED: <list>
+                   KEY DECISION: <if any>"
+                   ```
+                 - Close with auto-advance: `bd close <beads_task_id> --continue --reason "Task completed"`
+                   (The `--continue` flag auto-advances to next step if available)
                - **If `bd` command fails:**
                  > "⚠️ Beads command failed: <error message>"
                  > "A) Continue without Beads integration"

@@ -121,38 +121,89 @@ Dispatch track to Gastown: $ARGUMENTS
    For each task in parallel phase:
    
    ```bash
-   # Create Beads task under epic
+   # Create Beads task under epic (with initial notes for context)
    TASK_ID=$(bd create "<task_description>" \
      --type task \
      --parent $EPIC_ID \
      -p 1 \
+     --notes "FILES: <owned_files>
+SPEC: <spec_reference>" \
      --json | jq -r '.id')
    
-   # Set dependencies if needed
-   # bd dep add <child> <parent>  means child depends on parent
+   # Set dependencies if needed (child depends on parent)
+   # bd dep add $CHILD_TASK_ID $PARENT_TASK_ID
    
    # Sling to polecat (rig name is the project name in Gastown)
    gt sling $TASK_ID <rig_name>
-   
-   # Polecat will:
-   # 1. gt hook - check what work is assigned
-   # 2. bd ready - find unblocked tasks
-   # 3. bd update <id> --status in_progress - start work
-   # 4. Execute TDD workflow
-   # 5. bd update <id> --notes "..." - add context for compaction survival
-   # 6. bd close <id> --reason "commit: <sha>" - complete task
-   # 7. gt done --exit - signal completion
    ```
 
-3. **Handle dependencies:**
-   - Tasks with `<!-- depends: taskN -->`:
-     ```bash
-     # child depends on parent (parent must complete first)
-     bd dep add $CHILD_TASK_ID $PARENT_TASK_ID
-     ```
+---
+
+## 4.1 POLECAT INTERNAL WORKFLOW
+
+Each dispatched polecat follows this protocol (Gastown best practices):
+
+```bash
+# 1. Get AI-optimized context (CRITICAL: run first)
+bd prime
+
+# 2. Check hook - what am I working on?
+gt hook
+
+# 3. Find ready work from beads
+bd ready
+
+# 4. Start work with context notes
+bd update <task_id> --status in_progress \
+  --notes "Started: <task_description>
+APPROACH: <planned_approach>"
+
+# 5. Execute TDD workflow
+#    - RED: Write failing tests
+#    - GREEN: Implement to pass
+#    - REFACTOR: Clean up
+#    - Verify coverage meets threshold
+
+# 6. Add progress notes (CRITICAL for compaction survival)
+bd update <task_id> --notes "COMPLETED: <what_was_done>
+KEY DECISION: <important_choice_with_rationale>
+FILES CHANGED: <list_of_files>
+TESTS ADDED: <test_files>
+COMMIT: <sha>"
+
+# 7. Complete with auto-advance (if more steps in molecule)
+bd close <task_id> --continue --reason "commit: <sha>"
+# Or without auto-advance:
+bd close <task_id> --reason "commit: <sha>"
+
+# 8. Session cycling if context filling
+gt handoff  # Session cycles, sandbox persists
+
+# 9. When all work done, signal completion
+gt done --exit  # Exit session, Witness handles cleanup
+```
+
+**Notes Format for Compaction Survival:**
+Use structured notes that enable context recovery:
+- `COMPLETED:` - What was finished (specific, past tense)
+- `KEY DECISION:` - Important choices with rationale
+- `IN PROGRESS:` - Current work (if interrupted)
+- `NEXT:` - Immediate next step
+- `BLOCKER:` - What's blocking (if any)
+- `DISCOVERED:` - New issues found (with beads ID if created)
+
+---
+
+## 4.2 HANDLE DEPENDENCIES
+
+1. **Tasks with `<!-- depends: taskN -->` annotations:**
+   ```bash
+   # child depends on parent (parent must complete first)
+   bd dep add $CHILD_TASK_ID $PARENT_TASK_ID
+   ```
    - Dependent tasks won't appear in `bd ready` until blockers are closed
 
-4. **Update track status:**
+2. **Update track status:**
    - Change `## [ ] Track:` to `## [~] Track:` in `conductor/tracks.md`
    - Create dispatch state file:
      ```json

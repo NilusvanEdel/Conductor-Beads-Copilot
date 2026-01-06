@@ -56,20 +56,50 @@ Gastown uses a **Town** (workspace) model:
 - **Convoy tracking**: Batch progress monitoring with `gt convoy list` and `gt dashboard`
 
 ### Gastown CLI Commands (`gt`)
+
+#### Core Commands
 | Command | Description |
 |---------|-------------|
 | `gt install <path> --git` | Initialize Town workspace |
 | `gt rig add <name> <repo-url>` | Add project repository to Town |
+| `gt start` / `gt shutdown` | Start/stop Gastown services |
 | `gt status` | Check Town/rig status |
+| `gt doctor [--fix]` | Health check and auto-repair |
+
+#### Work Dispatch & Tracking
+| Command | Description |
+|---------|-------------|
 | `gt sling <task-id> <rig-name>` | Dispatch task to polecat worker |
 | `gt hook` | Check what work is assigned (inside polecat) |
-| `gt convoy create "<desc>" <epic-id> --human` | Create convoy for batch tracking |
-| `gt convoy list` | Show active convoys |
+| `gt convoy create "<desc>" <epic-id> --notify --human` | Create convoy for batch tracking |
+| `gt convoy list [--all]` | Show active convoys (dashboard view) |
 | `gt convoy status <id>` | Detailed convoy progress |
+
+#### Agent Lifecycle
+| Command | Description |
+|---------|-------------|
 | `gt handoff` | Cycle polecat session (preserve sandbox) |
 | `gt done --exit` | Signal completion, exit polecat |
-| `gt dashboard --port 8080` | Launch monitoring web UI |
+| `gt mol current` | What molecule step should I work on next |
+| `gt peek <agent>` | Check agent health |
+| `gt nudge <agent> "message"` | Send message to agent session |
+
+#### Sessions & Communication
+| Command | Description |
+|---------|-------------|
+| `gt mayor attach` | Enter Mayor session (primary interface) |
 | `gt agents` | Navigate between agent sessions |
+| `gt seance` | List discoverable predecessor sessions |
+| `gt seance --talk <id>` | Talk to predecessor (full context) |
+| `gt mail inbox` | Check messages |
+| `gt mail send <addr> -s "..." -m "..."` | Send inter-agent mail |
+| `gt escalate -s <SEVERITY> "msg"` | Escalate (CRITICAL/HIGH/MEDIUM) |
+
+#### Monitoring
+| Command | Description |
+|---------|-------------|
+| `gt dashboard --port 8080` | Launch monitoring web UI |
+| `gt refinery status` | Check merge queue status |
 
 ### Conductor Commands
 - `/conductor-dispatch [track_id]` - Dispatch track to Gastown polecats
@@ -169,20 +199,46 @@ fi
 - Notes survive context compaction
 
 ### Beads CLI Commands (`bd`)
+
+#### Essential Commands
 | Command | Description |
 |---------|-------------|
 | `bd init` | Initialize Beads in project (creates `.beads/`) |
-| `bd create "<desc>" -p <priority>` | Create task (use `--json \| jq -r '.id'` to capture ID) |
-| `bd list` | List all open tasks |
-| `bd list --parent <epic-id>` | List children of an epic |
+| `bd prime` | AI-optimized workflow context (run at session start) |
 | `bd ready` | List unblocked, ready-to-work tasks |
-| `bd show <id>` | Show task details |
+| `bd show <id>` | Show task details and audit trail |
+| `bd sync` | Push local changes to remote (run at session end) |
+
+#### Task Lifecycle
+| Command | Description |
+|---------|-------------|
+| `bd create "<desc>" -p <priority> [--notes "..."]` | Create task with optional notes |
 | `bd update <id> --status in_progress` | Mark task as in-progress |
 | `bd update <id> --notes "..."` | Add notes (survives compaction!) |
 | `bd close <id> --reason "..."` | Complete a task |
+| `bd close <id> --continue` | Complete and auto-advance to next step |
+| `bd list [--parent <epic-id>] [--status <status>]` | List tasks with filters |
+
+#### Dependencies
+| Command | Description |
+|---------|-------------|
 | `bd dep add <child> <parent>` | Set dependency (child waits for parent) |
-| `bd sync` | Push local changes to remote |
+
+#### Molecules (Workflow Templates)
+| Command | Description |
+|---------|-------------|
+| `bd formula list` | Available formulas |
+| `bd cook <formula>` | Formula → Protomolecule |
+| `bd mol pour <proto>` | Create persistent molecule |
+| `bd mol wisp <proto>` | Create ephemeral molecule |
+| `bd mol current` | Where am I in the current molecule? |
+| `bd mol squash <id>` | Condense to digest when done |
+
+#### Maintenance
+| Command | Description |
+|---------|-------------|
 | `bd compact --auto` | Archive old completed tasks |
+| `bd doctor` | Health check |
 
 ## Proactive Behaviors
 
@@ -216,4 +272,5 @@ fi
 
 - **Detailed workflows**: [references/workflows.md](references/workflows.md) - Step-by-step command execution
 - **Directory structure**: [references/structure.md](references/structure.md) - File layout and status markers
-- **Beads integration**: [references/beads-integration.md](references/beads-integration.md)
+- **Beads integration**: [references/beads-integration.md](references/beads-integration.md) - Session protocol, chemistry patterns
+- **Gastown patterns**: [references/gastown-patterns.md](references/gastown-patterns.md) - Multi-agent orchestration concepts
