@@ -1,7 +1,7 @@
 # CLI Command Reference
 
 **For:** AI agents and developers using bd command-line interface
-**Version:** 0.21.0+
+**Version:** 0.43.0+
 
 ## Quick Navigation
 
@@ -9,6 +9,9 @@
 - [Issue Management](#issue-management)
 - [Dependencies & Labels](#dependencies--labels)
 - [Filtering & Search](#filtering--search)
+- [Molecules & Chemistry](#molecules--chemistry)
+- [Agents & Gates](#agents--gates)
+- [Worktrees](#worktrees)
 - [Advanced Operations](#advanced-operations)
 - [Database Management](#database-management)
 
@@ -278,6 +281,151 @@ bd --actor alice <command>
 **See also:**
 - [TROUBLESHOOTING.md - Sandboxed environments](TROUBLESHOOTING.md#sandboxed-environments-codex-claude-code-etc) for detailed sandbox troubleshooting
 - [DAEMON.md](DAEMON.md) for daemon mode details
+
+## Molecules & Chemistry
+
+Molecules are reusable workflow templates. The "chemistry" metaphor:
+- **Solid (Proto)**: Frozen template in `.beads/`
+- **Liquid (Mol)**: Persistent instance (synced to git)
+- **Vapor (Wisp)**: Ephemeral instance (never synced)
+
+### Formula Management
+
+```bash
+# List available formulas (workflow templates)
+bd formula list --json
+
+# Cook formula into protomolecule
+bd cook <formula-name> --json
+```
+
+### Creating Molecules
+
+```bash
+# Create persistent molecule (auditable, synced to git)
+bd mol pour <proto-name> --json
+bd mol pour <proto-name> --var version=2.0 --json  # With variable substitution
+
+# Create ephemeral wisp (no audit trail, never synced)
+bd mol wisp <proto-name> --json
+
+# Spawn (defaults to wisp)
+bd mol spawn <proto-name> --json
+bd mol spawn <proto-name> --pour --json  # Force persistent
+
+# Spawn and immediately start working
+bd mol run <proto-name> --var version=2.0 --json
+```
+
+### Molecule Navigation
+
+```bash
+# Where am I in the current molecule?
+bd mol current --json
+
+# Show molecule structure
+bd mol show <mol-id> --json
+
+# Close step and auto-advance to next
+bd close <step-id> --continue --json
+```
+
+### Completing Molecules
+
+```bash
+# Squash completed molecule to digest (summary)
+bd mol squash <mol-id> --json
+bd mol squash <mol-id> --summary "Completed release" --json
+bd mol squash <mol-id> --keep-children --json  # Keep children, just create digest
+bd mol squash <mol-id> --dry-run --json        # Preview
+
+# Burn wisp without trace (no digest)
+bd mol burn <wisp-id> --json
+
+# Garbage collect orphaned wisps
+bd mol wisp gc --json
+```
+
+### Bonding Molecules
+
+```bash
+# Combine molecules (sequential by default)
+bd mol bond <mol-a> <mol-b> --json
+bd mol bond <mol-a> <mol-b> --type parallel --json
+bd mol bond <mol-a> <mol-b> --type conditional --json  # B runs if A fails
+
+# Custom compound name
+bd mol bond <mol-a> <mol-b> --as "Feature with Deploy" --json
+```
+
+### Distilling Templates
+
+```bash
+# Extract reusable template from ad-hoc work
+bd mol distill <epic-id> --as "Release Workflow" --json
+bd mol distill <epic-id> --var version=1.0.0 --as "Release Workflow" --json
+```
+
+### Cross-Project Dependencies
+
+```bash
+# Ship a capability (publish for other projects)
+bd ship <capability> --json
+bd ship auth-api --dry-run --json
+
+# Depend on external capability
+bd dep add <issue-id> external:<project>:<capability>
+```
+
+## Agents & Gates
+
+### Agent Registration (v0.40+)
+
+```bash
+# Register parallel worker agent
+bd agent register <agent-name> --json
+
+# Keep agent alive (prevents timeout)
+bd agent heartbeat --json
+
+# List active agents
+bd agent list --json
+```
+
+### Async Gates (Human-in-the-Loop)
+
+```bash
+# Create checkpoint gate
+bd gate create "Phase 1 Complete - Review Required" --json
+
+# Wait for gate approval (blocks until approved)
+bd gate wait <gate-id>
+
+# Approve gate (human action)
+bd gate approve <gate-id> --json
+bd gate approve <gate-id> --notes "Reviewed, looks good" --json
+
+# Reject gate
+bd gate reject <gate-id> --reason "Needs more tests" --json
+
+# List pending gates
+bd gate list --json
+```
+
+## Worktrees
+
+### Worktree Management (v0.40+)
+
+```bash
+# Create isolated worktree for parallel work
+bd worktree create <branch-name> --json
+
+# List active worktrees
+bd worktree list --json
+
+# Remove worktree
+bd worktree remove <branch-name> --json
+```
 
 ## Advanced Operations
 

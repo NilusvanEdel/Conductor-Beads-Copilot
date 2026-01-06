@@ -213,26 +213,46 @@ fi
 | Command | Description |
 |---------|-------------|
 | `bd create "<desc>" -p <priority> [--notes "..."]` | Create task with optional notes |
+| `bd create "<desc>" --deps discovered-from:<id>` | Create and link discovered work (one command) |
 | `bd update <id> --status in_progress` | Mark task as in-progress |
 | `bd update <id> --notes "..."` | Add notes (survives compaction!) |
 | `bd close <id> --reason "..."` | Complete a task |
 | `bd close <id> --continue` | Complete and auto-advance to next step |
 | `bd list [--parent <epic-id>] [--status <status>]` | List tasks with filters |
+| `bd dep tree <id>` | Visualize dependency graph |
 
 #### Dependencies
 | Command | Description |
 |---------|-------------|
 | `bd dep add <child> <parent>` | Set dependency (child waits for parent) |
+| `bd dep add <id> external:<project>:<capability>` | Cross-project dependency |
 
-#### Molecules (Workflow Templates)
+#### Molecules (Workflow Templates) - v0.34+
 | Command | Description |
 |---------|-------------|
-| `bd formula list` | Available formulas |
-| `bd cook <formula>` | Formula → Protomolecule |
-| `bd mol pour <proto>` | Create persistent molecule |
-| `bd mol wisp <proto>` | Create ephemeral molecule |
+| `bd formula list` | Available formulas (workflow templates) |
+| `bd cook <formula>` | Formula → Protomolecule (frozen template) |
+| `bd mol pour <proto>` | Create persistent molecule (auditable) |
+| `bd mol wisp <proto>` | Create ephemeral molecule (no audit trail) |
 | `bd mol current` | Where am I in the current molecule? |
-| `bd mol squash <id>` | Condense to digest when done |
+| `bd mol squash <id>` | Condense completed molecule to digest |
+| `bd mol burn <wisp>` | Delete wisp without trace |
+| `bd mol distill <epic> --as "<name>"` | Extract reusable template from ad-hoc work |
+
+#### Agents & Gates (v0.40+)
+| Command | Description |
+|---------|-------------|
+| `bd agent register <name>` | Register parallel worker agent |
+| `bd agent heartbeat` | Keep worker alive (prevents timeout) |
+| `bd gate create "<checkpoint>"` | Create human-in-the-loop gate |
+| `bd gate wait <id>` | Wait for human approval |
+| `bd gate approve <id>` | Approve gate (human action) |
+
+#### Worktrees (v0.40+)
+| Command | Description |
+|---------|-------------|
+| `bd worktree create <branch>` | Create isolated worktree for parallel work |
+| `bd worktree list` | List active worktrees |
 
 #### Maintenance
 | Command | Description |
@@ -267,6 +287,9 @@ fi
 | "Export summary" | `/conductor-export` |
 | "Docs are outdated" / "Sync with codebase" | `/conductor-refresh` |
 | "Dispatch to Gastown" / "Use polecats" | `/conductor-dispatch` |
+| "List templates" / "Show formulas" | `/conductor-formula` |
+| "Quick exploration" / "Ephemeral track" | `/conductor-wisp [formula]` |
+| "Extract template" / "Create reusable pattern" | `/conductor-distill [track_id]` |
 
 ## References
 

@@ -48,6 +48,9 @@ Conductor-Beads/
 | `/conductor:handoff` | `/conductor-handoff` | Create context handoff for section transfer |
 | `/conductor:refresh` | `/conductor-refresh` | Sync context docs with current codebase state |
 | `/conductor:dispatch` | `/conductor-dispatch` | Dispatch track to Gastown for multi-agent execution |
+| — | `/conductor-formula` | List and manage track templates (Beads formulas) |
+| — | `/conductor-wisp` | Create ephemeral exploration track (no audit trail) |
+| — | `/conductor-distill` | Extract reusable template from completed track |
 
 ### Skills
 

@@ -327,6 +327,8 @@ Implement track: $ARGUMENTS
                    ```
                  - Close with auto-advance: `bd close <beads_task_id> --continue --reason "Task completed"`
                    (The `--continue` flag auto-advances to next step if available)
+                 - If discovered work during implementation:
+                   `bd create "<issue>" -t bug -p 2 --deps discovered-from:<current_task_id> --json`
                - **If `bd` command fails:**
                  > "⚠️ Beads command failed: <error message>"
                  > "A) Continue without Beads integration"

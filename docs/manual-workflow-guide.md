@@ -28,7 +28,7 @@ flowchart TD
         K --> L["bd ready"]
         L --> M[Execute Task - TDD]
         M --> N{Complete?}
-        N -->|Yes| O["bd done + mark [x]"]
+        N -->|Yes| O["bd close --continue + mark [x]"]
         O --> P{More Tasks?}
         P -->|Yes| Q{5+ Done?}
         Q -->|Yes| R["handoff"]
@@ -260,7 +260,7 @@ Step 6: For each task, follow TDD workflow:
    f) Verify coverage (>80%)
    g) Commit with conventional message
        h) Update plan.md: [~] → [x] + SHA
-       i) Update Beads: bd done <task_id> --note "commit: <sha>"
+       i) Update Beads: bd close <task_id> --continue --reason "commit: <sha>"
        
        **Note: All commits stay local. Users decide when to push.**
 
@@ -622,11 +622,31 @@ When Beads integration is enabled, use these commands alongside Conductor:
 | `bd show <id> --notes` | View notes (survives compaction) |
 | `bd update <id> --status in_progress` | Start working on task |
 | `bd update <id> --notes "Progress..."` | Add progress notes |
-| `bd done <id> --note "commit: abc123"` | Complete task |
+| `bd close <id> --continue` | Complete task and auto-advance |
+| `bd create "Bug" --deps discovered-from:<id>` | Create and link discovered work |
 | `bd dep add <child> <parent>` | Add dependency |
 | `bd list` | See all tasks |
 | `bd search <query>` | Find tasks by keyword |
 | `bd sync` | Sync with git remote |
+
+### Molecule Commands (v0.34+)
+
+| Command | Purpose |
+|---------|---------|
+| `bd formula list` | List available workflow templates |
+| `bd mol pour <template>` | Create persistent track from template |
+| `bd mol wisp <template>` | Create ephemeral exploration |
+| `bd mol current` | Show current step in molecule |
+| `bd mol squash <id>` | Compress completed molecule |
+| `bd mol distill <epic> --as "Name"` | Extract template from work |
+
+### New Conductor Commands
+
+| Command | Purpose |
+|---------|---------|
+| `/conductor-formula` | List and manage track templates |
+| `/conductor-wisp` | Create ephemeral exploration track |
+| `/conductor-distill` | Extract reusable template from track |
 
 ### Session Resume with Beads
 

@@ -2,7 +2,7 @@
 
 ## Overview
 
-Conductor integrates with [Beads](https://github.com/lostinspiration/beads) to provide persistent task memory that survives context compaction. This creates a hybrid system:
+Conductor integrates with [Beads](https://github.com/steveyegge/beads) to provide persistent task memory that survives context compaction. This creates a hybrid system:
 
 - **Conductor**: Human-readable specs and plans
 - **Beads**: Agent-optimized task state with dependency tracking

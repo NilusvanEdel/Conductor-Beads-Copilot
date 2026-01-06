@@ -278,7 +278,7 @@ Create a new track for: $ARGUMENTS
    - If command not found:
      > "⚠️ Beads CLI (`bd`) is not installed. Beads provides persistent task memory across sessions."
      > "A) Continue without Beads integration"
-     > "B) Stop - I'll install Beads first (see: https://github.com/elimisteve/beads)"
+     > "B) Stop - I'll install Beads first (see: https://github.com/steveyegge/beads)"
      - If user chooses A: Skip remaining Beads steps, continue to completion
      - If user chooses B: HALT and wait for user to install
 

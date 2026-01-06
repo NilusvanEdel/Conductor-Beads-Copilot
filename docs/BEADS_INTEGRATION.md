@@ -481,6 +481,51 @@ bd update <task_id> --status blocked \
 | Ready task detection | Manual | `bd ready` |
 | Context after compaction | Re-read files | `bd show --notes` |
 | Multi-agent coordination | File locks | Hash-based IDs |
+| Workflow templates | Manual spec copying | `bd mol pour/wisp` |
+| Ephemeral exploration | Full track overhead | Wisps (no audit trail) |
+
+## Beads v0.43+ Features
+
+### Molecules (Workflow Templates)
+
+Conductor tracks can be extracted as reusable templates:
+
+| Beads Concept | Conductor Mapping | Command |
+|---------------|-------------------|---------|
+| **Formula** | Track template source | `bd formula list` |
+| **Proto** | Frozen template | `bd cook <formula>` |
+| **Mol** | Persistent track | `bd mol pour <proto>` |
+| **Wisp** | Ephemeral exploration | `bd mol wisp <proto>` |
+
+**New Conductor Commands:**
+- `/conductor-formula` - List available templates
+- `/conductor-wisp` - Quick ephemeral exploration
+- `/conductor-distill` - Extract template from completed track
+
+### Agents & Gates (v0.40+)
+
+For parallel execution coordination:
+
+```bash
+# Register parallel worker
+bd agent register worker_1_auth
+
+# Create human-in-the-loop checkpoint
+bd gate create "Phase 1 Review"
+
+# Wait for approval
+bd gate wait <gate-id>
+```
+
+### Cross-Project Dependencies
+
+```bash
+# Ship capability from project A
+bd ship auth-api
+
+# Depend on it from project B
+bd dep add <issue> external:project-a:auth-api
+```
 
 ## Open Questions
 

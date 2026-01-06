@@ -296,18 +296,34 @@ Shows:
 | `/conductor:handoff` | `/conductor-handoff` | Create context handoff |
 | `/conductor:refresh` | `/conductor-refresh` | Sync context with codebase |
 | `/conductor:dispatch` | `/conductor-dispatch` | Dispatch to Gastown |
+| — | `/conductor-formula` | List/manage track templates |
+| — | `/conductor-wisp` | Ephemeral exploration track |
+| — | `/conductor-distill` | Extract template from track |
 
 ### Essential Beads Commands
 
 | Command | Description |
 |---------|-------------|
+| `bd prime` | Load AI-optimized workflow context (run first!) |
 | `bd ready` | List tasks with no blockers |
 | `bd create "Title" -p 0` | Create a P0 (highest priority) task |
+| `bd create "Bug" --deps discovered-from:<id>` | Create and link discovered work |
 | `bd show <id>` | View task details, notes, and context |
-| `bd close <id> --reason "Done"` | Complete task with summary |
+| `bd close <id> --continue` | Complete task and auto-advance to next |
 | `bd update <id> --notes "context"` | Add notes for session resume |
 | `bd dep add <child> <parent>` | Add dependency between tasks |
 | `bd sync` | Force sync to remote (use at session end) |
+
+### Molecule Commands (v0.34+)
+
+| Command | Description |
+|---------|-------------|
+| `bd formula list` | List available workflow templates |
+| `bd mol pour <template>` | Create persistent track from template |
+| `bd mol wisp <template>` | Create ephemeral exploration (no audit) |
+| `bd mol current` | Show current step in molecule |
+| `bd mol squash <id>` | Compress completed molecule to digest |
+| `bd mol distill <epic> --as "Name"` | Extract template from completed work |
 
 ---
 
