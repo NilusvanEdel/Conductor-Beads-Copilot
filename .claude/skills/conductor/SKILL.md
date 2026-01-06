@@ -27,6 +27,61 @@ Conductor enables context-driven development by:
 4. Executing with TDD practices and progress tracking
 5. **Parallel execution** of independent tasks using sub-agents
 
+## Gastown Integration (Multi-Agent Orchestration)
+
+Conductor integrates with [Gastown](https://github.com/steveyegge/gastown) for enhanced parallel execution:
+
+### Detection
+```bash
+# Check if Gastown is available
+if which gt > /dev/null 2>&1; then
+  GASTOWN_ENABLED=true
+fi
+```
+
+### Gastown Architecture
+Gastown uses a **Town** (workspace) model:
+- **Town** (`~/gt/`): Central workspace managing multiple projects
+- **Rig**: A project repository added to the Town
+- **Polecat**: Ephemeral worker agents (spawn → work → disappear)
+- **Crew**: Long-running workspaces for ongoing development
+- **Mayor**: AI coordinator (primary interface via `gt mayor attach`)
+- **Witness**: Monitors polecats, handles stuck workers
+- **Refinery**: Automated merge queue for parallel branches
+
+### Benefits Over Native Task()
+- **Polecat workers**: Purpose-built ephemeral agents with isolated worktrees
+- **Durability**: Work state persists in Beads, survives crashes/compaction
+- **Refinery**: Automated merge queue for parallel branches
+- **Convoy tracking**: Batch progress monitoring with `gt convoy list` and `gt dashboard`
+
+### Gastown CLI Commands (`gt`)
+| Command | Description |
+|---------|-------------|
+| `gt install <path> --git` | Initialize Town workspace |
+| `gt rig add <name> <repo-url>` | Add project repository to Town |
+| `gt status` | Check Town/rig status |
+| `gt sling <task-id> <rig-name>` | Dispatch task to polecat worker |
+| `gt hook` | Check what work is assigned (inside polecat) |
+| `gt convoy create "<desc>" <epic-id> --human` | Create convoy for batch tracking |
+| `gt convoy list` | Show active convoys |
+| `gt convoy status <id>` | Detailed convoy progress |
+| `gt handoff` | Cycle polecat session (preserve sandbox) |
+| `gt done --exit` | Signal completion, exit polecat |
+| `gt dashboard --port 8080` | Launch monitoring web UI |
+| `gt agents` | Navigate between agent sessions |
+
+### Conductor Commands
+- `/conductor-dispatch [track_id]` - Dispatch track to Gastown polecats
+- Use `gt convoy list` to monitor progress
+- Use `gt dashboard --port 8080` for web UI
+- Use `gt agents` to navigate between sessions
+
+### Fallback
+If Gastown unavailable, Conductor uses native `Task()` sub-agents with `parallel_state.json`.
+
+See: [docs/GASTOWN_INTEGRATION.md](../../../docs/GASTOWN_INTEGRATION.md)
+
 ## Parallel Execution (New Feature)
 
 Conductor now supports parallel task execution for eligible phases:
@@ -113,6 +168,22 @@ fi
 - Use `bd ready` instead of manual task selection
 - Notes survive context compaction
 
+### Beads CLI Commands (`bd`)
+| Command | Description |
+|---------|-------------|
+| `bd init` | Initialize Beads in project (creates `.beads/`) |
+| `bd create "<desc>" -p <priority>` | Create task (use `--json \| jq -r '.id'` to capture ID) |
+| `bd list` | List all open tasks |
+| `bd list --parent <epic-id>` | List children of an epic |
+| `bd ready` | List unblocked, ready-to-work tasks |
+| `bd show <id>` | Show task details |
+| `bd update <id> --status in_progress` | Mark task as in-progress |
+| `bd update <id> --notes "..."` | Add notes (survives compaction!) |
+| `bd close <id> --reason "..."` | Complete a task |
+| `bd dep add <child> <parent>` | Set dependency (child waits for parent) |
+| `bd sync` | Push local changes to remote |
+| `bd compact --auto` | Archive old completed tasks |
+
 ## Proactive Behaviors
 
 1. **On new session**: Check for in-progress tracks, offer to resume
@@ -139,6 +210,7 @@ fi
 | "Archive completed" | `/conductor-archive` |
 | "Export summary" | `/conductor-export` |
 | "Docs are outdated" / "Sync with codebase" | `/conductor-refresh` |
+| "Dispatch to Gastown" / "Use polecats" | `/conductor-dispatch` |
 
 ## References
 

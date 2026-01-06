@@ -1,0 +1,191 @@
+description = "Dispatches a track to Gastown for multi-agent parallel execution"
+prompt = """
+## 1.0 SYSTEM DIRECTIVE
+You are an AI agent assistant for the Conductor framework with Gastown integration. Your task is to dispatch a track to Gastown for multi-agent parallel execution.
+
+CRITICAL: You must validate the success of every tool call. If any tool call fails, you MUST halt immediately, announce the failure, and await instructions.
+
+---
+
+## 1.1 PREREQUISITES CHECK
+
+**PROTOCOL: Verify Gastown and Beads are available.**
+
+1. **Check Gastown CLI:**
+   ```bash
+   which gt
+   ```
+   - If NOT found:
+     > "❌ Gastown is not installed. Install with: `go install github.com/steveyegge/gastown/cmd/gt@latest`"
+     > "Alternatively, use `/conductor:implement` for native parallel execution."
+     → HALT
+
+2. **Check Beads CLI:**
+   ```bash
+   which bd
+   ```
+   - If NOT found:
+     > "❌ Beads is not installed. Gastown dispatch requires Beads for work tracking."
+     → HALT
+
+3. **Check Gastown Town exists:**
+   ```bash
+   gt status
+   ```
+   - If fails:
+     > "❌ Gastown Town not initialized. Run:"
+     > "  `gt install ~/gt --git`"
+     > "  `cd ~/gt && gt rig add <name> <repo-url>`"
+     → HALT
+
+4. **Check Conductor Setup:**
+   - Verify `conductor/product.md`, `conductor/tech-stack.md`, `conductor/workflow.md` exist
+   - If missing → HALT with setup instructions
+
+---
+
+## 2.0 TRACK SELECTION
+
+**PROTOCOL: Identify the track to dispatch.**
+
+1. **If track_id provided as argument:**
+   - Verify `conductor/tracks/<track_id>/` exists
+   - Read `conductor/tracks/<track_id>/metadata.json`
+   - Confirm: "Dispatching track '<description>' to Gastown. Proceed? (y/n)"
+
+2. **If no track_id:**
+   - Parse `conductor/tracks.md` for first `[ ]` or `[~]` track
+   - Suggest: "Found track '<description>'. Dispatch this? (y/n)"
+
+3. **Check for parallel phases:**
+   - Read `conductor/tracks/<track_id>/plan.md`
+   - Scan for `<!-- execution: parallel -->` annotations
+   - If NO parallel phases:
+     > "⚠️ This track has no parallel phases. Gastown is most beneficial for parallel work."
+     > "A) Dispatch anyway (uses Gastown for durability)"
+     > "B) Use `/conductor:implement` instead"
+
+---
+
+## 3.0 CREATE CONVOY
+
+**PROTOCOL: Set up Gastown convoy for track coordination.**
+
+1. **Get or create Beads epic:**
+   ```bash
+   # Check if epic exists in metadata.json
+   EPIC_ID=$(cat conductor/tracks/<track_id>/metadata.json | jq -r '.beads_epic // empty')
+   
+   if [ -z "$EPIC_ID" ]; then
+     # Create new epic
+     EPIC_ID=$(bd create "<track_description>" -p 1 --json | jq -r '.id')
+   fi
+   ```
+
+2. **Create Gastown convoy:**
+   ```bash
+   gt convoy create "<track_description>" $EPIC_ID --notify --human
+   ```
+
+3. **Update track metadata:**
+   Add to `conductor/tracks/<track_id>/metadata.json`:
+   ```json
+   {
+     "beads_epic": "<epic_id>",
+     "execution_mode": "gastown",
+     "dispatched_at": "<timestamp>"
+   }
+   ```
+
+---
+
+## 4.0 DISPATCH PARALLEL TASKS
+
+**PROTOCOL: Sling parallel tasks to Gastown polecats.**
+
+1. **Parse plan.md for parallel phases:**
+   - Find phases with `<!-- execution: parallel -->`
+   - Extract tasks with `<!-- files: ... -->` and `<!-- depends: ... -->`
+
+2. **For each task in parallel phases:**
+   ```bash
+   # Create Beads task under epic
+   TASK_ID=$(bd create "<task_description>" --type task --parent $EPIC_ID -p 1 --json | jq -r '.id')
+   
+   # Set dependencies if needed (child depends on parent)
+   # bd dep add $CHILD_ID $PARENT_ID
+   
+   # Sling to polecat (rig name is project name in Gastown)
+   gt sling $TASK_ID <rig_name>
+   
+   # Polecat will:
+   # 1. gt hook - check assigned work
+   # 2. bd ready - find unblocked tasks
+   # 3. bd update <id> --status in_progress
+   # 4. Execute TDD workflow
+   # 5. bd update <id> --notes "context for compaction"
+   # 6. bd close <id> --reason "commit: <sha>"
+   # 7. gt done --exit
+   ```
+
+3. **Handle dependencies:**
+   - `bd dep add <child> <parent>` means child depends on parent
+   - Dependent tasks won't show in `bd ready` until blockers closed
+
+4. **Update track status:**
+   - Change `## [ ] Track:` to `## [~] Track:` in `conductor/tracks.md`
+   - Create `conductor/tracks/<track_id>/dispatch_state.json`
+
+---
+
+## 5.0 SEQUENTIAL PHASE HANDLING
+
+**PROTOCOL: Queue sequential phases for later.**
+
+1. **Identify non-parallel phases**
+2. **Create placeholder tasks:**
+   ```bash
+   # Create blocked task for sequential phase
+   PHASE_TASK=$(bd create "Execute <phase> (sequential)" --type task --parent $EPIC_ID -p 1 --json | jq -r '.id')
+   
+   # Add dependency on last parallel task
+   bd dep add $PHASE_TASK $LAST_PARALLEL_TASK
+   ```
+   - Sequential phases won't appear in `bd ready` until dependencies close
+
+---
+
+## 6.0 MONITORING SETUP
+
+**PROTOCOL: Provide monitoring commands.**
+
+Output:
+> "## 🚀 Track Dispatched to Gastown"
+>
+> **Convoy:** `<convoy_id>`
+> **Polecats:** <count> workers dispatched
+>
+> ### Monitor Progress
+> ```bash
+> gt convoy list
+> gt dashboard --port 8080
+> gt agents
+> ```
+>
+> ### When Complete
+> Run `/conductor:status <track_id>` to sync and see results.
+
+---
+
+## 7.0 ERROR HANDLING
+
+1. **Partial dispatch failure:**
+   > "⚠️ <N> tasks failed to dispatch. A) Retry B) Continue C) Abort"
+
+2. **Convoy creation failure:**
+   > "❌ Convoy creation failed. Fall back to `/conductor:implement`? (y/n)"
+
+3. **Clean up on abort:**
+   - Close convoy if created
+   - Reset track status
+"""

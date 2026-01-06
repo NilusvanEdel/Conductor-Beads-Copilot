@@ -1,0 +1,215 @@
+# Gastown Formula: Conductor Track Execution
+#
+# This formula enables Gastown to execute Conductor tracks with full
+# spec-first, TDD workflow compliance.
+#
+# Usage:
+#   bd cook conductor-track
+#   bd mol pour conductor-track --var track_id=auth_20241226
+#
+# See: docs/GASTOWN_INTEGRATION.md
+
+formula = "conductor-track"
+description = "Execute a Conductor track via Gastown multi-agent orchestration"
+version = "1.0.0"
+
+[metadata]
+author = "Conductor-Beads"
+category = "development"
+tags = ["conductor", "tdd", "parallel", "spec-first"]
+
+[variables]
+track_id = { description = "Conductor track ID (e.g., auth_20241226)", required = true }
+rig_name = { description = "Gastown rig name for this project", required = true }
+parallel_threshold = { description = "Min tasks to enable parallel execution", default = "2" }
+coverage_target = { description = "Minimum test coverage percentage", default = "80" }
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Step 1: Load Context
+# ─────────────────────────────────────────────────────────────────────────────
+[[steps]]
+id = "load-context"
+description = "Load and understand track specification and plan"
+instructions = """
+Read and internalize the following files:
+
+1. **Specification:** `conductor/tracks/{{track_id}}/spec.md`
+   - Understand requirements, acceptance criteria, constraints
+   - Note any edge cases or special handling
+
+2. **Implementation Plan:** `conductor/tracks/{{track_id}}/plan.md`
+   - Identify all phases and tasks
+   - Note execution mode annotations (parallel/sequential)
+   - Map file ownership for parallel tasks
+
+3. **Workflow:** `conductor/workflow.md`
+   - Understand TDD process (Red → Green → Refactor)
+   - Note commit message format
+   - Understand coverage requirements
+
+4. **Tech Stack:** `conductor/tech-stack.md`
+   - Understand available tools and frameworks
+   - Note testing conventions
+
+Output a brief summary of:
+- Total phases and tasks
+- Which phases are parallel vs sequential
+- Key requirements from spec
+"""
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Step 2: Validate Plan
+# ─────────────────────────────────────────────────────────────────────────────
+[[steps]]
+id = "validate-plan"
+description = "Validate plan structure and detect conflicts"
+needs = ["load-context"]
+instructions = """
+Before execution, validate:
+
+1. **File Ownership (for parallel phases):**
+   - Each task must have `<!-- files: ... -->` annotation
+   - No two tasks in same phase can claim same file
+   - If conflict found: HALT and report
+
+2. **Dependency Graph:**
+   - Check `<!-- depends: ... -->` annotations are valid
+   - Ensure no circular dependencies
+   - Verify referenced tasks exist
+
+3. **Coverage Feasibility:**
+   - Estimate if {{coverage_target}}% coverage is achievable
+   - Flag tasks that may need additional test focus
+
+If validation fails:
+- Report issues clearly
+- Suggest `/conductor-revise` to fix plan
+- Do NOT proceed with invalid plan
+"""
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Step 3: Execute Parallel Phases
+# ─────────────────────────────────────────────────────────────────────────────
+[[steps]]
+id = "execute-parallel"
+description = "Dispatch parallel phases to Gastown polecats"
+needs = ["validate-plan"]
+parallel = true
+instructions = """
+For each phase marked `<!-- execution: parallel -->`:
+
+1. **Create Beads tasks:**
+   ```bash
+   for task in phase.tasks:
+     TASK_ID=$(bd create "$task.description" --type task --parent {{epic_id}} -p 1 --json | jq -r '.id')
+   ```
+
+2. **Set dependencies:**
+   ```bash
+   # bd dep add <child> <parent> means child depends on parent
+   bd dep add $CHILD_TASK_ID $PARENT_TASK_ID
+   ```
+
+3. **Dispatch to polecats:**
+   ```bash
+   for task in phase.tasks where task.dependencies_met:
+     gt sling $task.beads_id {{rig_name}}
+   ```
+
+4. **Monitor completion:**
+   - Check convoy: `gt convoy list`
+   - Check Beads: `bd list --parent {{epic_id}} --status open`
+   - Check ready work: `bd ready`
+   - Handle failures: retry or escalate
+
+5. **Each polecat will:**
+   - `gt hook` - check what work is assigned
+   - `bd ready` - find unblocked tasks
+   - `bd update <id> --status in_progress` - start work
+   - Execute TDD workflow
+   - `bd update <id> --notes "..."` - add context for compaction survival
+   - `bd close <id> --reason "commit: <sha>"` - complete task
+   - `gt done --exit` - signal completion
+
+When all parallel tasks complete:
+- Sync Beads: `bd sync`
+- Refinery handles merge queue automatically
+"""
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Step 4: Execute Sequential Phases
+# ─────────────────────────────────────────────────────────────────────────────
+[[steps]]
+id = "execute-sequential"
+description = "Execute sequential phases in order"
+needs = ["execute-parallel"]
+instructions = """
+For each phase WITHOUT `<!-- execution: parallel -->`:
+
+1. **Process tasks in order:**
+   - Mark task `[~]` in plan.md
+   - Update Beads: `bd update $task_id --status in_progress`
+
+2. **Follow TDD workflow:**
+   - RED: Write failing test
+   - GREEN: Implement to pass
+   - REFACTOR: Clean up
+
+3. **Verify coverage:**
+   - Run coverage: appropriate command for tech stack
+   - Must meet {{coverage_target}}% threshold
+
+4. **Commit and sync:**
+   - Commit with proper message format
+   - Mark task `[x]` in plan.md
+   - Beads: `bd done $task_id --note "commit: $sha"`
+
+5. **Phase checkpoint:**
+   - After all tasks in phase complete
+   - Run full test suite
+   - Create checkpoint commit if needed
+"""
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Step 5: Finalize Track
+# ─────────────────────────────────────────────────────────────────────────────
+[[steps]]
+id = "finalize"
+description = "Complete track and sync status"
+needs = ["execute-sequential"]
+instructions = """
+After all phases complete:
+
+1. **Update track status:**
+   - In `conductor/tracks.md`: change `[~]` to `[x]`
+   - Delete `implement_state.json` if exists
+   - Delete `parallel_state.json` if exists
+   - Delete `dispatch_state.json` if exists
+
+2. **Sync Beads:**
+   ```bash
+   bd sync
+   bd update {{epic_id}} --status closed --note "Track completed"
+   ```
+
+3. **Final report:**
+   Output summary:
+   - Tasks completed: N
+   - Commits created: [list]
+   - Test coverage: X%
+   - Time taken: duration
+"""
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Error Handling
+# ─────────────────────────────────────────────────────────────────────────────
+[error_handling]
+on_task_failure = "pause_and_report"
+on_merge_conflict = "escalate_to_user"
+on_coverage_miss = "warn_and_continue"
+on_test_failure = "halt_and_debug"
+
+[recovery]
+checkpoint_frequency = "per_phase"
+state_file = "conductor/tracks/{{track_id}}/formula_state.json"
+resume_command = "bd mol resume {{molecule_id}}"

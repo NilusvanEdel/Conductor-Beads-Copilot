@@ -218,6 +218,49 @@ For phases with independent tasks, Conductor can now execute them in parallel us
 
 See [Parallel Execution Design](docs/PARALLEL_EXECUTION.md) for details.
 
+### Gastown Integration (Optional)
+
+For enhanced parallel execution with multi-agent orchestration, install [Gastown](https://github.com/steveyegge/gastown):
+
+**Prerequisites:**
+- Go 1.23+ ([install](https://go.dev/dl/))
+- Git 2.25+
+- Beads CLI (`bd`) - already installed if following this guide
+- tmux 3.0+ (recommended, not required)
+
+```bash
+# Install Gastown
+go install github.com/steveyegge/gastown@latest
+
+# Initialize in your project
+gt rig init
+```
+
+**Choose your execution method:**
+
+| Command | Use When |
+|---------|----------|
+| `/conductor-implement` | Default. Works always. Native Task() sub-agents. |
+| `/conductor-dispatch` | Gastown installed. Better crash recovery, auto-merge. |
+
+```bash
+# Native execution (always works)
+/conductor-implement auth_20241226
+
+# Gastown execution (if installed)
+/conductor-dispatch auth_20241226
+```
+
+**Gastown benefits:**
+- 🔄 **Hook durability** - Work survives crashes and context compaction
+- 🔀 **Refinery** - Automated merge queue for parallel branches
+- 📊 **Convoy tracking** - Batch progress with web dashboard
+- 🤖 **Polecats** - Purpose-built ephemeral worker agents
+
+Both produce the same code quality - Gastown adds reliability for larger tracks.
+
+See [Gastown Integration](docs/GASTOWN_INTEGRATION.md) for details.
+
 ### Checking Status
 
 ```bash
@@ -252,6 +295,7 @@ Shows:
 | `/conductor:export` | `/conductor-export` | Generate project summary |
 | `/conductor:handoff` | `/conductor-handoff` | Create context handoff |
 | `/conductor:refresh` | `/conductor-refresh` | Sync context with codebase |
+| `/conductor:dispatch` | `/conductor-dispatch` | Dispatch to Gastown |
 
 ### Essential Beads Commands
 
@@ -436,6 +480,8 @@ flowchart LR
 
 - [Manual Workflow Guide](docs/manual-workflow-guide.md)
 - [Beads Integration](docs/BEADS_INTEGRATION.md)
+- [Gastown Integration](docs/GASTOWN_INTEGRATION.md)
+- [Parallel Execution](docs/PARALLEL_EXECUTION.md)
 - [Beads Official Docs](https://github.com/steveyegge/beads)
 
 ---
