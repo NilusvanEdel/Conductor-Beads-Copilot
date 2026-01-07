@@ -17,12 +17,12 @@ It works with both Gemini CLI (via extension) and Claude Code (via commands and 
 ```
 Conductor-Beads/
 ├── .claude/
-│   ├── commands/           # Claude Code slash commands (13 commands)
+│   ├── commands/           # Claude Code slash commands (17 commands)
 │   └── skills/             # Claude Code skills
 │       ├── conductor/      # Context-driven development skill
 │       ├── beads/          # Persistent task memory skill
 │       └── skill-creator/  # Skill creation guide
-├── commands/conductor/     # Gemini CLI TOML commands (13 commands)
+├── commands/conductor/     # Gemini CLI TOML commands (17 commands)
 ├── templates/              # Workflow and styleguide templates
 ├── docs/                   # Documentation
 ├── CLAUDE.md               # This file
@@ -48,9 +48,9 @@ Conductor-Beads/
 | `/conductor:handoff` | `/conductor-handoff` | Create context handoff for section transfer |
 | `/conductor:refresh` | `/conductor-refresh` | Sync context docs with current codebase state |
 | `/conductor:dispatch` | `/conductor-dispatch` | Dispatch track to Gastown for multi-agent execution |
-| — | `/conductor-formula` | List and manage track templates (Beads formulas) |
-| — | `/conductor-wisp` | Create ephemeral exploration track (no audit trail) |
-| — | `/conductor-distill` | Extract reusable template from completed track |
+| `/conductor:formula` | `/conductor-formula` | List and manage track templates (Beads formulas) |
+| `/conductor:wisp` | `/conductor-wisp` | Create ephemeral exploration track (no audit trail) |
+| `/conductor:distill` | `/conductor-distill` | Extract reusable template from completed track |
 
 ### Skills
 

@@ -1,77 +1,71 @@
 description = "Archive completed tracks"
 prompt = """
 ## 1.0 SYSTEM DIRECTIVE
-Archive completed tracks to clean up the project.
+You are an AI agent for the Conductor framework. Your task is to archive completed tracks to clean up the project.
 
-## 2.0 FIND COMPLETED TRACKS
-1. Read `conductor/tracks.md`
-2. Find all tracks marked as `[x]` (completed)
-3. If none found, announce "No completed tracks to archive" and halt
+CRITICAL: You must validate the success of every tool call. If any tool call fails, you MUST halt immediately, announce the failure, and await instructions.
 
-## 3.0 PRESENT OPTIONS
-List completed tracks:
-> "The following tracks are completed and can be archived:
-> 1. [x] track_id_1 - Description
-> 2. [x] track_id_2 - Description
-> 
-> A) Archive all
-> B) Select specific tracks
-> C) Cancel"
+---
 
-## 4.0 ARCHIVE SELECTED
-For each track to archive:
-1. Create `conductor/archive/` if not exists
-2. **Check for stale parallel state:** If `conductor/tracks/<track_id>/parallel_state.json` exists:
-   > "⚠️ Track has leftover parallel state file. This may indicate incomplete parallel execution."
-   > "A) Delete parallel_state.json and continue archive"
-   > "B) Cancel archive for this track"
-   - If A: Delete the file, proceed
-   - If B: Skip this track
-3. Move `conductor/tracks/<track_id>/` to `conductor/archive/<track_id>/`
-4. Remove track entry from `conductor/tracks.md`
-5. Add archive entry: `<!-- Archived: track_id on YYYY-MM-DD -->`
+## 1. Find Completed Tracks
+List all `[x]` tracks from `tracks.md`.
 
-## 4.5 BEADS COMPACTION
-Leverage Beads' semantic memory decay to keep context manageable.
+## 2. Select Tracks
+- Archive all completed
+- Or select specific ones
+- Or cancel
 
-1. Check if the Beads CLI is available by running `which bd`
-2. If `bd` is not found, present the following prompt:
-   > "⚠️ Beads CLI (`bd`) is not installed. Beads provides persistent task memory across sessions.
-   > A) Continue archive without Beads compaction
-   > B) Stop - I'll install Beads first
-   >
-   > Please respond with A or B."
-   - **If A:** Skip remaining Beads steps.
-   - **If B:** HALT and wait for user to install Beads.
-3. If `bd` is found, for each archived track:
-   - Read `conductor/tracks/<track_id>/metadata.json`
-   - **Clear Stale Parallel Assignees:** If any Beads tasks have assignees set (from parallel execution):
+## 3. Archive Process
+For each selected track:
+1. Create `conductor/archive/` if needed
+2. **Check for stale parallel state**: If `parallel_state.json` exists, warn and clean up
+3. Move track folder to archive
+4. Remove from `tracks.md`
+5. Add archive comment
+
+## 4. Commit
+Commit the archive operation.
+
+---
+
+## 5. BEADS COMPACTION
+
+**PROTOCOL: Compact Beads history for archived tracks.**
+
+1. **Check for Beads CLI:**
+   - Run `which bd`
+   - **If NOT found:**
+     > "⚠️ Beads CLI (`bd`) is not installed. Beads provides persistent task memory across sessions."
+     > "A) Continue archive without Beads compaction"
+     > "B) Stop - I'll install Beads first"
+     - If A: Skip this section
+     - If B: HALT and wait for user
+
+2. **Clear Stale Parallel Assignees:**
+   - For each archived track, check if any Beads tasks have assignees set (from parallel execution):
      ```bash
      # Clear any leftover parallel worker assignees
      bd update <task_id> --assignee "" --json
      ```
-   - If `beads_epic` field exists:
-     - Run `bd compact --auto <epic_id>` to summarize and compact completed tasks
-   - **Error Handling:** If `bd` command fails:
-     > "⚠️ Beads command failed: <error message>
-     > A) Continue archive without Beads compaction
-     > B) Retry the failed command
-     > C) Stop - I'll fix the issue first"
-     - If A: Skip remaining Beads steps.
-     - If B: Retry the command.
-     - If C: HALT and wait for user.
-4. If any epics were compacted, announce: "Compacted Beads history for archived tracks"
+   - This prevents orphaned worker assignments
 
-5. Offer deep compaction option:
-> "Would you like to compact all completed Beads tasks?
-> A) Yes - Compact all completed tasks project-wide
-> B) No - Only compact archived tracks"
+3. **Compact Archived Track Epics:**
+   - For each archived track with `beads_epic` in metadata:
+     - Run `bd compact --auto <epic_id>`
+   - **If any `bd` command fails:**
+     > "⚠️ Beads command failed: <error message>"
+     > "A) Continue archive without Beads compaction"
+     > "B) Retry the failed command"
+     > "C) Stop - I'll fix the issue first"
+     - If A: Skip remaining Beads steps
+     - If B: Retry the command
+     - If C: HALT and wait for user
+   - Announce: "Compacted Beads history for archived tracks."
 
-If A selected: Run `bd compact --auto --all`
-
-## 5.0 COMMIT
-Commit changes: `conductor(archive): Archive N completed tracks`
-
-## 6.0 ANNOUNCE
-"Archived N tracks. They can be found in `conductor/archive/`."
+4. **Offer Project-Wide Compaction:**
+   > "Would you like to compact all completed Beads tasks?"
+   > A) Yes - Compact all completed tasks project-wide
+   > B) No - Only compact archived tracks
+   
+   If A: Run `bd compact --auto --all`
 """

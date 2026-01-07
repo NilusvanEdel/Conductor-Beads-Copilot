@@ -1,190 +1,225 @@
-description = "Displays the current progress of the project"
+description = "Display current Conductor project progress"
 prompt = """
 ## 1.0 SYSTEM DIRECTIVE
-You are an AI agent. Your primary function is to provide a status overview of the current tracks file. This involves reading the `conductor/tracks.md` file, parsing its content, and summarizing the progress of tasks.
+You are an AI agent for the Conductor framework. Your task is to display the current status and progress of the Conductor project.
 
-**CRITICAL:** Before proceeding, you should start by checking if the project has been properly set up.
-1.  **Verify Tracks File:** Check if the file `conductor/tracks.md` exists. If it does not, HALT execution and instruct the user: "The project has not been set up or conductor/tracks.md has been corrupted. Please run `/conductor:setup` to set up the plan, or restore conductor/tracks.md."
-2.  **Verify Track Exists:** Check if the file `conductor/tracks.md` is not empty. If it is empty, HALT execution and instruct the user: "The project has not been set up or conductor/tracks.md has been corrupted. Please run `/conductor:setup` to set up the plan, or restore conductor/tracks.md."
-
-CRITICAL: You must validate the success of every tool call. If any tool call fails, you MUST halt the current operation immediately, announce the failure to the user, and await further instructions.
+CRITICAL: You must validate the success of every tool call. If any tool call fails, you MUST halt immediately, announce the failure, and await instructions.
 
 ---
 
+## 1. Check Setup
 
-## 1.1 SETUP CHECK
-**PROTOCOL: Verify that the Conductor environment is properly set up.**
+If `conductor/tracks.md` doesn't exist, tell user to run `/conductor:setup` first.
 
-1.  **Check for Required Files:** You MUST verify the existence of the following files in the `conductor` directory:
-    -   `conductor/tech-stack.md`
-    -   `conductor/workflow.md`
-    -   `conductor/product.md`
+## 2. Read State
 
-2.  **Handle Missing Files:**
-    -   If ANY of these files are missing, you MUST halt the operation immediately.
-    -   Announce: "Conductor is not set up. Please run `/conductor:setup` to set up the environment."
-    -   Do NOT proceed to Status Overview Protocol.
+- Read `conductor/tracks.md`
+- List all track directories: `conductor/tracks/*/`
+- Read each `conductor/tracks/<track_id>/plan.md`
+
+## 3. Calculate Progress
+
+For each track:
+- Read `metadata.json` to get priority and depends_on
+- Count total tasks (lines with `- [ ]`, `- [~]`, `- [x]`)
+- Count completed `[x]`
+- Count in-progress `[~]`
+- Count pending `[ ]`
+- Calculate percentage: (completed / total) * 100
+- Check if blocked (has incomplete dependencies)
+
+## 4. Present Summary
+
+Format the output like this:
+
+```
+## Conductor Status
+
+**Active Track:** [track name] ([completed]/[total] tasks - [percent]%)
+**Overall Status:** In Progress | Complete | No Active Tracks
+
+### Priority Grouping
+
+Group tracks by priority (read from metadata.json):
+- 🔴 Critical
+- 🟠 High  
+- 🟡 Medium
+- 🟢 Low
+
+### Tracks by Priority
+
+**🔴 Critical**
+- [~] auth_20241215 - User Authentication (30%)
+
+**🟠 High**
+- [ ] payments_20241216 - Payment Integration 🔒
+  ⤷ Depends on: auth_20241215
+
+**🟡 Medium**
+- [x] setup_20241214 - Project Setup (100%)
+
+**🟢 Low**
+- [ ] docs_20241217 - Documentation
+
+### Blocked Tracks
+
+Show 🔒 for tracks with incomplete dependencies.
+Show dependency chain: "Depends on: [track_ids]"
+
+### Blockers
+List all tasks marked with `[!]`:
+- Task name (track_id): Reason
+
+### Current Task
+[The task marked with [~] in the active track's plan.md]
+
+### Next Action
+[The next task marked with [ ] in the active track's plan.md]
+
+### Recent Completions
+[Last 3 tasks marked [x] with their commit SHAs]
+```
+
+## 5a. Parallel Execution Status
+
+If any track has `parallel_state.json`:
+
+```
+### Parallel Execution (Phase: [phase_name])
+
+**Status:** Running | Waiting for workers | Complete
+
+**Workers:**
+- 🟢 worker_1_auth: Completed (commit: abc1234)
+- 🔵 worker_2_config: In Progress (45 min)
+- ⚪ worker_3_utils: Pending (depends on worker_1)
+
+**File Locks:**
+- src/auth/index.ts → worker_1_auth
+- src/config/index.ts → worker_2_config
+
+**Progress:** 1/3 workers complete
+```
+
+## 6. Suggestions
+
+Based on status:
+- If no tracks: "Run `/conductor:newTrack` to create your first track"
+- If track in progress: "Run `/conductor:implement` to continue"
+- If all complete: "All tracks complete! Run `/conductor:newTrack` for new work"
 
 ---
 
-## 2.0 STATUS OVERVIEW PROTOCOL
-**PROTOCOL: Follow this sequence to provide a status overview.**
+## 7. BEADS STATUS
 
-### 2.1 Read Project Plan
-1.  **Locate and Read:** Read the content of the `conductor/tracks.md` file.
-2.  **Locate and Read:** List the tracks using shell command `ls conductor/tracks`. For each of the tracks, read the corresponding `conductor/<track_id>/plan.md` file.
+**PROTOCOL: Show Beads task status.**
 
-### 2.2 Parse and Summarize Plan
-1.  **Parse Content:**
-    -   Identify major project phases/sections (e.g., top-level markdown headings).
-    -   Identify individual tasks and their current status (e.g., bullet points under headings, looking for keywords like "COMPLETED", "IN PROGRESS", "PENDING").
-2.  **Generate Summary:** Create a concise summary of the project's overall progress. This should include:
-    -   The total number of major phases.
-    -   The total number of tasks.
-    -   The number of tasks completed, in progress, and pending.
-3.  **Read Priority and Dependencies:**
-    -   For each track, read its `metadata.json` to get priority and depends_on
-    -   Group tracks by priority level: critical, high, medium, low
-    -   For tracks with depends_on, check if dependencies are complete
-    -   Sort tracks within each priority by created_at (oldest first)
-4.  **Identify Blocked Tracks:**
-    -   A track is "blocked" if any track in its depends_on is not completed
-    -   Mark blocked tracks with 🔒 symbol
-    -   For tracks with dependencies (`depends_on` not empty), show: "⤷ Depends on: [list]"
+1. **Check for Beads CLI:**
+   - Run `which bd`
+   - **If NOT found:**
+     > "⚠️ Beads CLI (`bd`) is not installed. Beads provides persistent task memory across sessions."
+     > "A) Continue without Beads status"
+     > "B) Stop - I'll install Beads first"
+     - If A: Skip this section
+     - If B: HALT and wait for user
 
-### 2.3 Present Status Overview
-1.  **Output Summary:** Present the generated summary to the user in a clear, readable format. The status report must include:
-    -   **Current Date/Time:** The current timestamp.
-    -   **Project Status:** A high-level summary of progress (e.g., "On Track", "Behind Schedule", "Blocked").
-    -   **Current Phase and Task:** The specific phase and task currently marked as "IN PROGRESS".
-    -   **Next Action Needed:** The next task listed as "PENDING".
-    -   **Blockers:** Any items explicitly marked as blockers in the plan, plus any tracks blocked by dependencies.
-    -   **Phases (total):** The total number of major phases.
-    -   **Tasks (total):** The total number of tasks.
-    -   **Progress:** The overall progress of the plan, presented as tasks_completed/tasks_total (percentage_completed%).
+2. **Gather Beads Status:**
+   - Run `bd ready --json` to get tasks with no blockers
+   - **If command fails:**
+     > "⚠️ Beads command failed: <error message>"
+     > "A) Continue without Beads status"
+     > "B) Retry the failed command"
+     > "C) Stop - I'll fix the issue first"
+     - If A: Skip remaining Beads steps
+     - If B: Retry the command
+     - If C: HALT and wait for user
+   - For active track with `beads_epic` in metadata:
+     - Run `bd show <epic_id> --json` to get full context
+     - Read epic notes for last session context (COMPLETED, IN PROGRESS, NEXT)
 
-2.  **Tracks by Priority Format:** Present tracks grouped by priority level:
-    ```
-    ### Tracks by Priority
+3. **Present Beads Status:**
+   ```
+   ### Beads Task Status
 
-    **🔴 Critical**
-    - [Status] track_description (X% complete)
+   **Last Session Context (from epic notes):**
+   - COMPLETED: <from notes>
+   - IN PROGRESS: <from notes>
+   - NEXT: <from notes>
+   - KEY DECISIONS: <from notes>
 
-    **🟠 High**
-    - [Status] track_description (X% complete)
-      - 🔒 Blocked by: dependency_track_id
+   **Ready to Work (no blockers):**
+   - bd-a3f8.1.2 P1 "Implement auth middleware"
+   - bd-a3f8.2.1 P2 "Write API tests"
 
-    **🟡 Medium**
-    - [Status] track_description (X% complete)
+   **In Progress:**
+   - bd-a3f8.1.1 [active] "Setup database schema"
 
-    **🟢 Low**
-    - [Status] track_description (X% complete)
+   **Blocked:**
+   - bd-a3f8.3.1 ⤷ Waiting on: bd-a3f8.2.1
 
-    ### Blockers
-    - [!] "Task name" in track_id [BLOCKED: reason]
-    - [!] "Task name" in track_id [BLOCKED: reason]
+   **Discovered During Work:**
+   - bd-xyz (discovered-from: bd-a3f8.1.1) "Found race condition"
+   ```
 
-    (If no blockers: "No blocked tasks 🎉")
+4. **Dependency Graph (if complex):**
+   ```
+   ### Dependency Graph
+   bd-a3f8 (Epic: auth_20241226)
+   ├── bd-a3f8.1 ✓ Phase 1
+   │   ├── bd-a3f8.1.1 ✓
+   │   └── bd-a3f8.1.2 ~
+   └── bd-a3f8.2 ○ Phase 2 (blocked)
+   ```
 
-    ### Dependency Graph
-    (Show if any tracks have dependencies)
-    track_a ──depends on──▶ track_b
-    ```
+---
 
-### 2.4 Parallel Execution Status
-**PROTOCOL: Display parallel worker status if applicable.**
+## 8. GASTOWN STATUS (If Available)
 
-1.  **Check for Parallel State:**
-    -   For each active track, check if `conductor/tracks/<track_id>/parallel_state.json` exists
-    -   If exists, read and display parallel execution status
+**PROTOCOL: Show Gastown convoy and polecat status.**
 
-2.  **Present Parallel Status (if applicable):**
-    ```
-    ### Parallel Execution (Phase: [phase_name])
+1. **Check for Gastown CLI:**
+   - Run `which gt`
+   - If NOT found: Skip this section silently
 
-    **Status:** Running | Waiting for workers | Complete
+2. **Check Town Status:**
+   ```bash
+   gt status
+   ```
+   - If fails: Skip Gastown section
 
-    **Workers:**
-    - 🟢 worker_1_auth: Completed (commit: abc1234)
-    - 🔵 worker_2_config: In Progress (45 min)
-    - ⚪ worker_3_utils: Pending (depends on worker_1)
+3. **Gather Convoy Status:**
+   ```bash
+   gt convoy list --json
+   ```
 
-    **File Locks:**
-    - src/auth/index.ts → worker_1_auth
-    - src/config/index.ts → worker_2_config
+4. **Present Gastown Status:**
+   ```
+   ### Gastown Integration
 
-    **Progress:** 1/3 workers complete
-    ```
+   **Town Status:** Running | Stopped
+   
+   **Active Convoys:**
+   - 🚚 hq-cv-abc: "Feature X" (2/4 issues complete)
+   - 🚚 hq-cv-def: "Bug fixes" (3/3 complete ✓)
 
-### 2.5 BEADS STATUS
-**PROTOCOL: Display Beads task status.**
+   **Polecats (for current rig):**
+   - 🟢 furiosa: Working on gt-xyz (active 5 min)
+   - 🟢 max: Working on gt-abc (active 12 min)
+   - ⚪ nux: Idle (available)
 
-1.  **Check Beads CLI:**
-    -   Execute `which bd` to check if the Beads CLI is available
-    -   If `bd` is not found, present the following prompt:
-        > "⚠️ Beads CLI (`bd`) is not installed. Beads provides persistent task memory across sessions.
-        > A) Continue without Beads status
-        > B) Stop - I'll install Beads first
-        >
-        > Please respond with A or B."
-        -   **If A:** Skip remaining Beads steps.
-        -   **If B:** HALT and wait for user to install Beads.
-    -   If `bd` is found, continue to gather Beads status.
+   **Refinery Queue:**
+   - 2 MRs pending review
+   - 1 MR merging
 
-2.  **Gather Beads Status:**
-    -   Run `bd ready` to get tasks with no blockers (ready to work)
-    -   **Error Handling:** If `bd` command fails:
-        > "⚠️ Beads command failed: <error message>
-        > A) Continue without Beads status
-        > B) Retry the failed command
-        > C) Stop - I'll fix the issue first"
-        -   If A: Skip remaining Beads steps.
-        -   If B: Retry the command.
-        -   If C: HALT and wait for user.
-    -   Identify the active track (marked `[~]` in tracks.md)
-    -   If there's an active track, check its `metadata.json` for `beads.epic_id`
-    -   If epic_id exists, run `bd show <epic_id>` to get detailed task status
+   **Commands:**
+   - `gt convoy list` - Dashboard view
+   - `gt dashboard --port 8080` - Web UI
+   - `gt agents` - Navigate sessions
+   ```
 
-3.  **Present Beads Task Status:**
-    ```
-    ### Beads Task Status
-
-    **Ready to Work (no blockers):**
-    - bd-a3f8.1.2 P1 "Implement auth middleware"
-    - bd-a3f8.2.1 P2 "Write API tests"
-
-    **In Progress:**
-    - bd-a3f8.1.1 [active] "Setup database schema"
-
-    **Blocked:**
-    - bd-a3f8.3.1 ⤷ Waiting on: bd-a3f8.2.1
-    ```
-
-4.  **Show Dependency Graph (if complex dependencies exist):**
-    -   Display if the epic has more than 2 phases or nested dependencies
-    ```
-    ### Beads Dependency Graph
-    bd-a3f8 (Epic: auth_20241226)
-    ├── bd-a3f8.1 ✓ Phase 1
-    │   ├── bd-a3f8.1.1 ✓
-    │   └── bd-a3f8.1.2 ~
-    └── bd-a3f8.2 ○ Phase 2 (blocked by .1)
-        └── bd-a3f8.2.1 ○
-    ```
-
-    Legend: ✓ = completed, ~ = in progress, ○ = pending, ⊘ = blocked
-
-5.  **Integrate with Final Status:**
-    -   When Beads is enabled, add to the final status output:
-    ```
-    ### Combined Status Summary
-
-    **Conductor Tracks:** X tracks (Y in progress, Z completed)
-    **Beads Tasks:** A tasks ready, B in progress, C blocked
-
-    **Recommended Next Action:**
-    - [From Beads] bd-a3f8.1.2 "Implement auth middleware" (P1, no blockers)
-    - [From Conductor] Continue task X in track_id
-    ```
-
+5. **Molecule Status (if dispatched via formula):**
+   ```bash
+   gt hook  # Check current agent's work
+   bd mol current  # Molecule step status
+   ```
 """

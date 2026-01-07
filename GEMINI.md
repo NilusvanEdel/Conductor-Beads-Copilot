@@ -37,6 +37,11 @@ When Beads is enabled:
 - Each Conductor track maps to a Beads epic
 - Notes in Beads survive context compaction
 
+**Beads Formula Commands (New!):**
+- `/conductor:formula` - List and manage track templates (Beads formulas)
+- `/conductor:wisp` - Create ephemeral exploration track (no audit trail)
+- `/conductor:distill` - Extract reusable template from completed track
+
 ## Git Policy
 
 **Important**: Conductor commits locally but never pushes automatically. Users decide when and how to push to remote repositories.
