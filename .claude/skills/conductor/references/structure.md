@@ -97,7 +97,6 @@ The only differences are command syntax:
 | `/conductor:export` | `/conductor-export` | Generate project summary export |
 | `/conductor:handoff` | `/conductor-handoff` | Create context handoff for section transfer |
 | `/conductor:refresh` | `/conductor-refresh` | Sync context docs with current codebase state |
-| `/conductor:dispatch` | `/conductor-dispatch` | Dispatch track to Gastown for multi-agent execution |
 | `/conductor:formula` | `/conductor-formula` | List and manage track templates (Beads formulas) |
 | `/conductor:wisp` | `/conductor-wisp` | Create ephemeral exploration track (no audit trail) |
 | `/conductor:distill` | `/conductor-distill` | Extract reusable template from completed track |

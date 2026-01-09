@@ -11,23 +11,6 @@ Conductor supports parallel task execution for phases with independent tasks:
 - Use `<!-- depends: taskN -->` for task dependencies within a phase
 - State tracked in `parallel_state.json`
 
-## Gastown Integration (Optional)
-
-When [Gastown](https://github.com/steveyegge/gastown) is installed (`gt` CLI available):
-
-- Use `/conductor:dispatch` to send tracks to Gastown polecats
-- Hook system provides crash recovery (work survives session restarts)
-- Refinery handles automated merge queue for parallel branches
-- Convoy system tracks batch progress with web dashboard (`gt dashboard`)
-- Falls back to native sub-agents if Gastown unavailable
-
-**Quick start:**
-```bash
-go install github.com/steveyegge/gastown@latest
-gt rig init
-/conductor:dispatch <track_id>
-```
-
 ## Beads Integration
 
 If `.beads/` directory exists alongside `conductor/`, this project uses Beads for persistent task memory. Check `conductor/beads.json` for integration config.

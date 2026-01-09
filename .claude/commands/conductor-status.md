@@ -174,52 +174,9 @@ Based on status:
 
 ---
 
-## 8. GASTOWN STATUS (If Available)
+## 8. NEXT ACTIONS
 
-**PROTOCOL: Show Gastown convoy and polecat status.**
-
-1. **Check for Gastown CLI:**
-   - Run `which gt`
-   - If NOT found: Skip this section silently
-
-2. **Check Town Status:**
+**Molecule Status (if using formula):**
    ```bash
-   gt status
-   ```
-   - If fails: Skip Gastown section
-
-3. **Gather Convoy Status:**
-   ```bash
-   gt convoy list --json
-   ```
-
-4. **Present Gastown Status:**
-   ```
-   ### Gastown Integration
-
-   **Town Status:** Running | Stopped
-   
-   **Active Convoys:**
-   - 🚚 hq-cv-abc: "Feature X" (2/4 issues complete)
-   - 🚚 hq-cv-def: "Bug fixes" (3/3 complete ✓)
-
-   **Polecats (for current rig):**
-   - 🟢 furiosa: Working on gt-xyz (active 5 min)
-   - 🟢 max: Working on gt-abc (active 12 min)
-   - ⚪ nux: Idle (available)
-
-   **Refinery Queue:**
-   - 2 MRs pending review
-   - 1 MR merging
-
-   **Commands:**
-   - `gt convoy list` - Dashboard view
-   - `gt dashboard --port 8080` - Web UI
-   - `gt agents` - Navigate sessions
-   ```
-
-5. **Molecule Status (if dispatched via formula):**
-   ```bash
-   gt hook  # Check current agent's work
    bd mol current  # Molecule step status
    ```

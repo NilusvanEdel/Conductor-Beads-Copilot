@@ -17,12 +17,12 @@ It works with both Gemini CLI (via extension) and Claude Code (via commands and 
 ```
 Conductor-Beads/
 ├── .claude/
-│   ├── commands/           # Claude Code slash commands (17 commands)
+│   ├── commands/           # Claude Code slash commands (16 commands)
 │   └── skills/             # Claude Code skills
 │       ├── conductor/      # Context-driven development skill
 │       ├── beads/          # Persistent task memory skill
 │       └── skill-creator/  # Skill creation guide
-├── commands/conductor/     # Gemini CLI TOML commands (17 commands)
+├── commands/conductor/     # Gemini CLI TOML commands (16 commands)
 ├── templates/              # Workflow and styleguide templates
 ├── docs/                   # Documentation
 ├── CLAUDE.md               # This file
@@ -47,7 +47,6 @@ Conductor-Beads/
 | `/conductor:export` | `/conductor-export` | Generate project summary export |
 | `/conductor:handoff` | `/conductor-handoff` | Create context handoff for section transfer |
 | `/conductor:refresh` | `/conductor-refresh` | Sync context docs with current codebase state |
-| `/conductor:dispatch` | `/conductor-dispatch` | Dispatch track to Gastown for multi-agent execution |
 | `/conductor:formula` | `/conductor-formula` | List and manage track templates (Beads formulas) |
 | `/conductor:wisp` | `/conductor-wisp` | Create ephemeral exploration track (no audit trail) |
 | `/conductor:distill` | `/conductor-distill` | Extract reusable template from completed track |
@@ -103,18 +102,8 @@ Phases can execute tasks in parallel using sub-agents:
 - Annotate phases with `<!-- execution: parallel -->`
 - Tasks have `<!-- files: ... -->` for exclusive file ownership
 - Use `<!-- depends: taskN -->` for task dependencies
-- Coordinator spawns workers via Task() tool or Gastown polecats
+- Coordinator spawns workers via Task() tool
 - State tracked in `parallel_state.json`
-
-### Gastown Integration (Optional)
-When [Gastown](https://github.com/steveyegge/gastown) is installed (`gt` CLI available):
-- `/conductor-dispatch` sends tracks to Gastown polecats for parallel execution
-- Hook system provides crash recovery (work survives session restarts)
-- Refinery handles automated merge queue for parallel branches
-- Convoy system tracks batch progress with dashboard
-- Falls back to native Task() if Gastown unavailable
-
-See [docs/GASTOWN_INTEGRATION.md](docs/GASTOWN_INTEGRATION.md) for details.
 
 ### Task Workflow (TDD)
 1. Select task from plan.md (or use `bd ready` if Beads enabled)
@@ -176,5 +165,4 @@ At phase completion:
 
 - [Manual Workflow Guide](docs/manual-workflow-guide.md) - Step-by-step command reference
 - [Beads Integration](docs/BEADS_INTEGRATION.md) - How Conductor and Beads work together
-- [Gastown Integration](docs/GASTOWN_INTEGRATION.md) - Multi-agent orchestration with Gastown
 - [Parallel Execution](docs/PARALLEL_EXECUTION.md) - Parallel task execution design

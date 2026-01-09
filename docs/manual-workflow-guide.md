@@ -62,7 +62,6 @@ flowchart TD
 | **Standard** | `setup` → `bd init` → `newtrack` → `implement` → `archive` |
 | **Multi-Section** | `implement` → `handoff` → *(new session)* → `implement` |
 | **Parallel Tasks** | `newtrack` (enable parallel) → `implement` (spawns workers) |
-| **Gastown Parallel** | `newtrack` → `dispatch` → `gt convoy list` → `status` |
 | **Session Resume** | `bd ready` → `bd show --notes` → `implement` |
 | **Blocked Task** | `block` → `skip` or wait → continue |
 | **Plan Changes** | `revise` → continue `implement` |
@@ -613,63 +612,7 @@ conductor/tracks/<track_id>/
 
 ---
 
-### 14. `/conductor-dispatch` (or `/conductor:dispatch`)
-
-**Purpose**: Dispatch a track to Gastown for multi-agent parallel execution.
-
-**When to use**: 
-- Track has parallel phases that benefit from multi-agent execution
-- Gastown is installed and configured
-- You want enhanced crash recovery and automated merge queue
-
-**Prerequisites**:
-- Gastown CLI (`gt`) installed
-- Beads CLI (`bd`) installed
-- Gastown Town initialized (`gt rig init`)
-
-**Manual workflow**:
-
-```
-Step 1: Run the command
-   /conductor-dispatch
-   # or specify track
-   /conductor-dispatch auth_20241219
-
-Step 2: Prerequisites check
-   - Gastown CLI verified
-   - Beads CLI verified
-   - Town status checked
-
-Step 3: Track selection
-   - If not specified, first incomplete track selected
-   - Parallel phases detected from plan.md
-
-Step 4: Convoy creation
-   - Beads epic created or found
-   - Gastown convoy created: gt convoy create
-
-Step 5: Task dispatch
-   - For each parallel task:
-     - Beads task created with dependencies
-     - Task slung to polecat: gt sling
-
-Step 6: Monitoring commands provided
-   - gt convoy list (check status)
-   - gt dashboard --port 8080 (web UI)
-   - gt agents (navigate sessions)
-```
-
-**Polecat workflow** (each worker):
-1. `bd prime` - Get AI-optimized context
-2. `gt hook` - Check assigned work
-3. `bd ready` - Find ready tasks
-4. Execute TDD workflow
-5. `bd close <id> --continue` - Complete and advance
-6. `gt done --exit` - Signal completion
-
----
-
-### 15. `/conductor-formula` (or `/conductor:formula`)
+### 14. `/conductor-formula` (or `/conductor:formula`)
 
 **Purpose**: List and manage track workflow templates (Beads formulas).
 
@@ -715,7 +658,7 @@ Step 3: For "show <name>" subcommand
 
 ---
 
-### 16. `/conductor-wisp` (or `/conductor:wisp`)
+### 15. `/conductor-wisp` (or `/conductor:wisp`)
 
 **Purpose**: Create ephemeral exploration track (no audit trail).
 
@@ -763,7 +706,7 @@ bd mol burn <wisp>                  # Delete without trace
 
 ---
 
-### 17. `/conductor-distill` (or `/conductor:distill`)
+### 16. `/conductor-distill` (or `/conductor:distill`)
 
 **Purpose**: Extract reusable template from completed track.
 

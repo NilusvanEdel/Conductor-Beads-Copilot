@@ -7,7 +7,7 @@ description: |
   - Files like `conductor/tracks.md`, `conductor/product.md`, `conductor/workflow.md` exist
   - User asks about project status, implementation progress, or track management
   - User wants to organize development work with TDD practices
-  - User invokes `/conductor-*` commands (setup, newtrack, implement, status, revert, validate, block, skip, revise, archive, export, handoff, refresh, dispatch, formula, wisp, distill)
+  - User invokes `/conductor-*` commands (setup, newtrack, implement, status, revert, validate, block, skip, revise, archive, export, handoff, refresh, formula, wisp, distill)
   - User mentions documentation is outdated or wants to sync context with codebase changes
   
   Interoperable with Gemini CLI extension and Claude Code commands.
@@ -26,91 +26,6 @@ Conductor enables context-driven development by:
 3. Creating specs and phased implementation plans
 4. Executing with TDD practices and progress tracking
 5. **Parallel execution** of independent tasks using sub-agents
-
-## Gastown Integration (Multi-Agent Orchestration)
-
-Conductor integrates with [Gastown](https://github.com/steveyegge/gastown) for enhanced parallel execution:
-
-### Detection
-```bash
-# Check if Gastown is available
-if which gt > /dev/null 2>&1; then
-  GASTOWN_ENABLED=true
-fi
-```
-
-### Gastown Architecture
-Gastown uses a **Town** (workspace) model:
-- **Town** (`~/gt/`): Central workspace managing multiple projects
-- **Rig**: A project repository added to the Town
-- **Polecat**: Ephemeral worker agents (spawn → work → disappear)
-- **Crew**: Long-running workspaces for ongoing development
-- **Mayor**: AI coordinator (primary interface via `gt mayor attach`)
-- **Witness**: Monitors polecats, handles stuck workers
-- **Refinery**: Automated merge queue for parallel branches
-
-### Benefits Over Native Task()
-- **Polecat workers**: Purpose-built ephemeral agents with isolated worktrees
-- **Durability**: Work state persists in Beads, survives crashes/compaction
-- **Refinery**: Automated merge queue for parallel branches
-- **Convoy tracking**: Batch progress monitoring with `gt convoy list` and `gt dashboard`
-
-### Gastown CLI Commands (`gt`)
-
-#### Core Commands
-| Command | Description |
-|---------|-------------|
-| `gt install <path> --git` | Initialize Town workspace |
-| `gt rig add <name> <repo-url>` | Add project repository to Town |
-| `gt start` / `gt shutdown` | Start/stop Gastown services |
-| `gt status` | Check Town/rig status |
-| `gt doctor [--fix]` | Health check and auto-repair |
-
-#### Work Dispatch & Tracking
-| Command | Description |
-|---------|-------------|
-| `gt sling <task-id> <rig-name>` | Dispatch task to polecat worker |
-| `gt hook` | Check what work is assigned (inside polecat) |
-| `gt convoy create "<desc>" <epic-id> --notify --human` | Create convoy for batch tracking |
-| `gt convoy list [--all]` | Show active convoys (dashboard view) |
-| `gt convoy status <id>` | Detailed convoy progress |
-
-#### Agent Lifecycle
-| Command | Description |
-|---------|-------------|
-| `gt handoff` | Cycle polecat session (preserve sandbox) |
-| `gt done --exit` | Signal completion, exit polecat |
-| `gt mol current` | What molecule step should I work on next |
-| `gt peek <agent>` | Check agent health |
-| `gt nudge <agent> "message"` | Send message to agent session |
-
-#### Sessions & Communication
-| Command | Description |
-|---------|-------------|
-| `gt mayor attach` | Enter Mayor session (primary interface) |
-| `gt agents` | Navigate between agent sessions |
-| `gt seance` | List discoverable predecessor sessions |
-| `gt seance --talk <id>` | Talk to predecessor (full context) |
-| `gt mail inbox` | Check messages |
-| `gt mail send <addr> -s "..." -m "..."` | Send inter-agent mail |
-| `gt escalate -s <SEVERITY> "msg"` | Escalate (CRITICAL/HIGH/MEDIUM) |
-
-#### Monitoring
-| Command | Description |
-|---------|-------------|
-| `gt dashboard --port 8080` | Launch monitoring web UI |
-| `gt refinery status` | Check merge queue status |
-
-### Conductor Commands
-- `/conductor-dispatch [track_id]` - Dispatch track to Gastown polecats
-- Use `gt convoy list` to monitor progress
-- Use `gt dashboard --port 8080` for web UI
-- Use `gt agents` to navigate between sessions
-
-### Fallback
-If Gastown unavailable, Conductor uses native `Task()` sub-agents with `parallel_state.json`.
-
-See: [docs/GASTOWN_INTEGRATION.md](../../../docs/GASTOWN_INTEGRATION.md)
 
 ## Parallel Execution (New Feature)
 
@@ -328,7 +243,6 @@ fi
 | "Archive completed" | `/conductor-archive` |
 | "Export summary" | `/conductor-export` |
 | "Docs are outdated" / "Sync with codebase" | `/conductor-refresh` |
-| "Dispatch to Gastown" / "Use polecats" | `/conductor-dispatch` |
 | "List templates" / "Show formulas" | `/conductor-formula` |
 | "Quick exploration" / "Ephemeral track" | `/conductor-wisp [formula]` |
 | "Extract template" / "Create reusable pattern" | `/conductor-distill [track_id]` |
@@ -338,7 +252,6 @@ fi
 - **Detailed workflows**: [references/workflows.md](references/workflows.md) - Step-by-step command execution
 - **Directory structure**: [references/structure.md](references/structure.md) - File layout and status markers
 - **Beads integration**: [references/beads-integration.md](references/beads-integration.md) - Session protocol, chemistry patterns
-- **Gastown patterns**: [references/gastown-patterns.md](references/gastown-patterns.md) - Multi-agent orchestration concepts
 - **Learnings system**: [references/learnings-system.md](references/learnings-system.md) - Ralph-style knowledge capture
 - **Patterns template**: [references/patterns-template.md](references/patterns-template.md) - Template for conductor/patterns.md
 - **Learnings template**: [references/learnings-template.md](references/learnings-template.md) - Template for track learnings.md

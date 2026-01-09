@@ -19,7 +19,6 @@ Context-Driven Development for Claude Code. Measure twice, code once.
 - [Workflow: Export](#workflow-export)
 - [Workflow: Refresh](#workflow-refresh)
 - [Workflow: Handoff](#workflow-handoff)
-- [Workflow: Dispatch](#workflow-dispatch)
 - [Workflow: Formula](#workflow-formula)
 - [Workflow: Wisp](#workflow-wisp)
 - [Workflow: Distill](#workflow-distill)
@@ -51,7 +50,6 @@ Context-Driven Development for Claude Code. Measure twice, code once.
 | `/conductor-export` | Export project summary |
 | `/conductor-handoff` | Create context handoff for section transfer |
 | `/conductor-refresh [scope]` | Sync context docs with current codebase state |
-| `/conductor-dispatch [track_id]` | Dispatch track to Gastown for multi-agent execution |
 | `/conductor-formula [list\|show <name>]` | List and manage track templates (Beads formulas) |
 | `/conductor-wisp [formula_name]` | Create ephemeral exploration track (no audit trail) |
 | `/conductor-distill <track_id>` | Extract reusable template from completed track |
@@ -1346,71 +1344,6 @@ The implement workflow should suggest handoff when:
 - Phase boundary reached with significant remaining work
 
 Announce: "You've completed significant work. Consider running `/conductor-handoff` to save context before continuing."
-
----
-
-## Workflow: Dispatch
-
-**Trigger:** `/conductor-dispatch [track_id]`
-
-Dispatch a track to Gastown for multi-agent parallel execution.
-
-### 1. Prerequisites Check
-
-1. **Check Gastown CLI:** Run `which gt`
-   - If NOT found → HALT with installation instructions
-   
-2. **Check Beads CLI:** Run `which bd`
-   - If NOT found → HALT (Beads required for dispatch)
-
-3. **Check Gastown Town:** Run `gt status`
-   - If fails → HALT with initialization instructions
-
-4. **Check Conductor Setup:** Verify setup files exist
-
-### 2. Track Selection
-
-- If track_id provided: Validate track exists
-- If no track_id: Find first incomplete track from `conductor/tracks.md`
-- Check for `<!-- execution: parallel -->` annotations in plan.md
-
-### 3. Create Convoy
-
-1. Get or create Beads epic from track metadata
-2. Create Gastown convoy: `gt convoy create "<description>" $EPIC_ID --notify --human`
-3. Update track metadata with execution mode
-
-### 4. Dispatch Parallel Tasks
-
-For each task in parallel phases:
-```bash
-# Create Beads task
-TASK_ID=$(bd create "<task>" --parent $EPIC_ID -p 1 --json | jq -r '.id')
-
-# Set dependencies if needed
-bd dep add $CHILD_ID $PARENT_ID
-
-# Sling to polecat
-gt sling $TASK_ID <rig_name>
-```
-
-### 5. Polecat Workflow
-
-Each polecat follows:
-1. `bd prime` - Get AI-optimized context
-2. `gt hook` - Check assigned work
-3. `bd ready` - Find ready tasks
-4. Execute TDD workflow
-5. `bd close <id> --continue` - Complete and advance
-6. `gt done --exit` - Signal completion
-
-### 6. Monitoring
-
-Provide commands:
-- `gt convoy list` - Check convoy status
-- `gt dashboard --port 8080` - Web UI
-- `gt agents` - Navigate sessions
-- `gt refinery status` - Check merge queue
 
 ---
 
