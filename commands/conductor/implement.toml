@@ -79,7 +79,15 @@ CRITICAL: You must validate the success of every tool call. If any tool call fai
      - `conductor/workflow.md`
    - **Error Handling:** If any read fails, STOP and inform user
 
-3a. **Beads Context:**
+3a. **Load Patterns Context (Ralph-style knowledge priming):**
+    - **Read Project Patterns:** If `conductor/patterns.md` exists:
+      - Read and announce: "📚 **Codebase Patterns:** Found X patterns from previous tracks"
+      - These patterns inform implementation decisions
+    - **Read Track Learnings:** If `conductor/tracks/<track_id>/learnings.md` exists:
+      - Read to understand prior work on this track
+      - Display: "📝 **Track Learnings:** Resuming with context from previous sessions"
+
+3b. **Beads Context:**
     - **Check for Beads CLI:** Run `which bd`
     - **If NOT found:**
       > "⚠️ Beads CLI (`bd`) is not installed. Beads provides persistent task memory across sessions."
@@ -235,7 +243,41 @@ CRITICAL: You must validate the success of every tool call. If any tool call fai
 6. **Finalize Track:**
    - After all tasks complete, update `conductor/tracks.md`: `## [~]` → `## [x]`
    - **Clean Up State:** Delete `conductor/tracks/<track_id>/implement_state.json`
+   - **Elevate Patterns:** Prompt for pattern consolidation (see step 5e)
    - Announce track fully complete
+
+---
+
+## 5.1 LEARNINGS CAPTURE (After Each Task)
+
+**PROTOCOL: Record learnings and patterns discovered during implementation (Ralph-style progress tracking).**
+
+After marking each task `[x]` complete, append to `conductor/tracks/<track_id>/learnings.md`:
+
+```markdown
+## [YYYY-MM-DD HH:MM] - Phase N Task M: <task_name>
+- **Implemented:** <brief description of what was done>
+- **Files changed:** <list of files modified/created>
+- **Commit:** <sha_7chars>
+- **Learnings:**
+  - Patterns: <reusable patterns discovered>
+  - Gotchas: <things to watch out for>
+  - Context: <useful context for future>
+---
+```
+
+**5e. Pattern Elevation (At Phase/Track Completion):**
+
+1. **Review Learnings:** Scan `learnings.md` for reusable patterns
+2. **Identify Candidates:** Look for patterns mentioned 2+ times, gotchas that apply beyond this track
+3. **Prompt for Elevation:**
+   > "I found these potentially reusable patterns from this phase/track:"
+   > [List patterns]
+   > "Select patterns to add to `conductor/patterns.md`"
+
+4. **Update Project Patterns:**
+   - If patterns selected, append to `conductor/patterns.md`
+   - Create file with header if it doesn't exist
 
 ---
 

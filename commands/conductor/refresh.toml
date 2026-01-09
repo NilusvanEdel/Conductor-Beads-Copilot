@@ -54,6 +54,32 @@ git commit -m "conductor(refresh): Sync context with codebase"
 
 ---
 
+## 8a. CONSOLIDATE LEARNINGS (Pattern Flywheel)
+
+**PROTOCOL: Aggregate and consolidate learnings across all tracks into project patterns.**
+
+1. **Scan All Track Learnings:**
+   - Read `learnings.md` from all tracks in `conductor/tracks/*/`
+   - Read `learnings.md` from all archived tracks in `conductor/archive/*/`
+
+2. **Extract Pattern Candidates:**
+   - Find patterns mentioned 2+ times across different tracks
+   - Find gotchas that reoccur
+   - Find context that applies project-wide
+
+3. **Present Consolidation Report:**
+   > "## Learnings Consolidation Report"
+   > **Patterns found across tracks:** [list with track sources]
+   > **New patterns to add:** [list]
+   > "Would you like to update `conductor/patterns.md`? (yes/no)"
+
+4. **Update `conductor/patterns.md`:**
+   - Add new patterns with source attribution
+   - Merge duplicates
+   - Create file with header if it doesn't exist
+
+---
+
 ## 9. BEADS DRIFT CHECK
 
 **PROTOCOL: Include Beads status in drift analysis.**

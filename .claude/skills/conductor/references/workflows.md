@@ -19,6 +19,10 @@ Context-Driven Development for Claude Code. Measure twice, code once.
 - [Workflow: Export](#workflow-export)
 - [Workflow: Refresh](#workflow-refresh)
 - [Workflow: Handoff](#workflow-handoff)
+- [Workflow: Dispatch](#workflow-dispatch)
+- [Workflow: Formula](#workflow-formula)
+- [Workflow: Wisp](#workflow-wisp)
+- [Workflow: Distill](#workflow-distill)
 - [State Files Reference](#state-files-reference)
 - [Status Markers](#status-markers)
 
@@ -47,6 +51,10 @@ Context-Driven Development for Claude Code. Measure twice, code once.
 | `/conductor-export` | Export project summary |
 | `/conductor-handoff` | Create context handoff for section transfer |
 | `/conductor-refresh [scope]` | Sync context docs with current codebase state |
+| `/conductor-dispatch [track_id]` | Dispatch track to Gastown for multi-agent execution |
+| `/conductor-formula [list\|show <name>]` | List and manage track templates (Beads formulas) |
+| `/conductor-wisp [formula_name]` | Create ephemeral exploration track (no audit trail) |
+| `/conductor-distill <track_id>` | Extract reusable template from completed track |
 
 ---
 
@@ -1338,6 +1346,229 @@ The implement workflow should suggest handoff when:
 - Phase boundary reached with significant remaining work
 
 Announce: "You've completed significant work. Consider running `/conductor-handoff` to save context before continuing."
+
+---
+
+## Workflow: Dispatch
+
+**Trigger:** `/conductor-dispatch [track_id]`
+
+Dispatch a track to Gastown for multi-agent parallel execution.
+
+### 1. Prerequisites Check
+
+1. **Check Gastown CLI:** Run `which gt`
+   - If NOT found → HALT with installation instructions
+   
+2. **Check Beads CLI:** Run `which bd`
+   - If NOT found → HALT (Beads required for dispatch)
+
+3. **Check Gastown Town:** Run `gt status`
+   - If fails → HALT with initialization instructions
+
+4. **Check Conductor Setup:** Verify setup files exist
+
+### 2. Track Selection
+
+- If track_id provided: Validate track exists
+- If no track_id: Find first incomplete track from `conductor/tracks.md`
+- Check for `<!-- execution: parallel -->` annotations in plan.md
+
+### 3. Create Convoy
+
+1. Get or create Beads epic from track metadata
+2. Create Gastown convoy: `gt convoy create "<description>" $EPIC_ID --notify --human`
+3. Update track metadata with execution mode
+
+### 4. Dispatch Parallel Tasks
+
+For each task in parallel phases:
+```bash
+# Create Beads task
+TASK_ID=$(bd create "<task>" --parent $EPIC_ID -p 1 --json | jq -r '.id')
+
+# Set dependencies if needed
+bd dep add $CHILD_ID $PARENT_ID
+
+# Sling to polecat
+gt sling $TASK_ID <rig_name>
+```
+
+### 5. Polecat Workflow
+
+Each polecat follows:
+1. `bd prime` - Get AI-optimized context
+2. `gt hook` - Check assigned work
+3. `bd ready` - Find ready tasks
+4. Execute TDD workflow
+5. `bd close <id> --continue` - Complete and advance
+6. `gt done --exit` - Signal completion
+
+### 6. Monitoring
+
+Provide commands:
+- `gt convoy list` - Check convoy status
+- `gt dashboard --port 8080` - Web UI
+- `gt agents` - Navigate sessions
+- `gt refinery status` - Check merge queue
+
+---
+
+## Workflow: Formula
+
+**Trigger:** `/conductor-formula [list|show <name>]`
+
+List and manage track workflow templates (Beads formulas).
+
+### 1. Beads Check
+
+Verify Beads CLI (`bd`) is available and `.beads/` directory exists.
+
+### 2. Parse Subcommand
+
+**If empty or "list":**
+- Run `bd formula list --json`
+- Display available formulas with descriptions
+
+**If "show <name>":**
+- Run `bd mol show <name> --json`
+- Display formula structure, variables, and usage examples
+
+**If "create":**
+- Announce: Use `/conductor-distill <track_id>` to create from completed track
+
+### 3. Display Results
+
+```
+## Available Formulas (Track Templates)
+
+| Formula | Description | Variables |
+|---------|-------------|-----------|
+| `<name>` | `<description>` | `<var_list>` |
+
+**Usage:**
+- `/conductor-formula show <name>` - View details
+- `bd mol pour <name>` - Create persistent track
+- `/conductor-wisp <name>` - Create ephemeral exploration
+```
+
+---
+
+## Workflow: Wisp
+
+**Trigger:** `/conductor-wisp [formula_name] [--var key=value]`
+
+Create ephemeral exploration track (no audit trail).
+
+### 1. Beads Check
+
+Verify Beads CLI (`bd`) is available and `.beads/` directory exists.
+
+### 2. Understand Wisps
+
+Wisps are ephemeral workflow instances that:
+- Live in `.beads-wisp/` (separate from `.beads/`)
+- Are never synced to git
+- Leave no permanent audit trail
+- Perfect for exploration, debugging, quick fixes
+
+### 3. Create Wisp
+
+**If formula name provided:**
+```bash
+bd mol wisp <formula_name> [--var key=value ...] --json
+```
+
+**If no formula name:**
+1. List available formulas
+2. If none exist, create ad-hoc exploration:
+   ```bash
+   bd create "Exploration: <description>" -t epic -p 3 --json
+   bd mol wisp <epic_id> --json
+   ```
+
+### 4. Wisp Management
+
+| Action | Command |
+|--------|---------|
+| Create from formula | `bd mol wisp <formula>` |
+| See current step | `bd mol current` |
+| Complete step | `bd close <step> --continue` |
+| List wisps | `bd mol wisp list` |
+| Save with summary | `bd mol squash <wisp> --summary "..."` |
+| Delete completely | `bd mol burn <wisp>` |
+
+### 5. Transition to Persistent Track
+
+If exploration reveals valuable work:
+- A) Convert to persistent track with `/conductor-newtrack`
+- B) Create follow-up issues with `bd create`
+- C) Squash with digest
+- D) Burn (discard)
+
+---
+
+## Workflow: Distill
+
+**Trigger:** `/conductor-distill <track_id> [--as <template_name>]`
+
+Extract reusable template from completed track.
+
+### 1. Beads Check
+
+Verify Beads CLI (`bd`) is available and `.beads/` directory exists.
+
+### 2. Track Selection
+
+- If track_id provided: Validate track exists and is completed `[x]`
+- If no track_id: List completed tracks for selection
+- Check track has linked Beads epic
+
+### 3. Template Extraction
+
+1. **Determine template name:**
+   - Use `--as <name>` if provided
+   - Otherwise derive from track description (kebab-case)
+
+2. **Analyze track for variables:**
+   - Read spec.md and plan.md
+   - Identify patterns that should be parameterized
+   - Propose variables: `{{module_name}}`, `{{token_type}}`, etc.
+
+3. **Extract template:**
+   ```bash
+   bd mol distill <beads_epic_id> \
+     --as "<template_name>" \
+     --var <value1>=<var1> \
+     --json
+   ```
+
+### 4. Register with Conductor (Optional)
+
+- Create `conductor/templates/<template_name>/`
+- Copy spec.md and plan.md as templates with variable placeholders
+- Create template metadata.json
+
+### 5. Cleanup
+
+Offer to archive source track after extraction:
+- A) Archive - Move to `conductor/archive/`
+- B) Keep - Leave track in place
+- C) Delete - Permanently remove (template already extracted)
+
+### 6. Template Usage
+
+```bash
+# List templates
+/conductor-formula list
+
+# View template
+/conductor-formula show <template_name>
+
+# Create from template
+bd mol pour <template_name> --var module_name=payments
+/conductor-wisp <template_name> --var module_name=cache
+```
 
 ---
 

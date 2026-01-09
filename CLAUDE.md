@@ -71,6 +71,7 @@ project/
 │   ├── tech-stack.md        # Technology choices
 │   ├── workflow.md          # Development workflow (TDD, commits)
 │   ├── tracks.md            # Master track list with status
+│   ├── patterns.md          # Consolidated learnings (Ralph-style)
 │   ├── beads.json           # Beads integration config
 │   ├── setup_state.json     # Resume state for setup
 │   ├── refresh_state.json   # Context refresh tracking
@@ -80,6 +81,7 @@ project/
 │           ├── metadata.json     # Track config + Beads epic ID
 │           ├── spec.md           # Requirements
 │           ├── plan.md           # Phased task list
+│           ├── learnings.md      # Patterns/gotchas discovered (Ralph-style)
 │           ├── implement_state.json # Resume state (if in progress)
 │           ├── handoff_*.md      # Section handoff documents
 │           ├── blockers.md       # Block history log
@@ -134,6 +136,26 @@ When Beads is enabled (`conductor/beads.json` with `enabled: true`):
 - `bd ready` finds tasks with no blockers
 - Notes survive context compaction
 - Graceful degradation if `bd` command fails
+
+### Learnings System (Ralph-style)
+Conductor captures and consolidates learnings across tracks:
+
+**Per-Track (`learnings.md`):**
+- Append-only log of patterns, gotchas, context discovered during implementation
+- Each entry includes: timestamp, thread URL, files changed, commit, learnings
+- Survives across sessions via handoffs
+
+**Project-Level (`patterns.md`):**
+- Consolidated patterns extracted from completed/archived tracks
+- Organized by category: Code Conventions, Architecture, Gotchas, Testing, Context
+- Read before starting new work to prime context
+
+**Knowledge Flywheel:**
+1. Implement → discover patterns
+2. Log in track `learnings.md`
+3. At phase/track completion → elevate to `patterns.md`
+4. Archive → extract remaining patterns
+5. New tracks → inherit patterns from `patterns.md`
 
 ### Phase Checkpoints
 At phase completion:

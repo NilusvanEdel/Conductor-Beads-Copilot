@@ -217,7 +217,32 @@ CRITICAL: You must validate the success of every tool call. If any tool call fai
    - `conductor/tracks/<track_id>/spec.md`
    - `conductor/tracks/<track_id>/plan.md`
 
-9. **Update Tracks File:**
+9. **Initialize Learnings File (Ralph-style progress tracking):**
+   
+   a. **Read Project Patterns:** If `conductor/patterns.md` exists:
+      - Read and display: "📚 **Codebase Patterns:** Found X patterns from previous tracks"
+      - These patterns will guide implementation
+   
+   b. **Check for Similar Archived Tracks:**
+      - Scan `conductor/archive/` for tracks with similar names/descriptions
+      - If found, ask to seed learnings from a previous track
+   
+   c. **Create `learnings.md`:**
+      ```markdown
+      # Track Learnings: <track_id>
+      
+      Patterns, gotchas, and context discovered during implementation.
+      
+      ## Codebase Patterns (Inherited)
+      
+      <patterns from conductor/patterns.md or archived tracks>
+      
+      ---
+      
+      <!-- Learnings from implementation will be appended below -->
+      ```
+
+10. **Update Tracks File:**
    - Announce: "Updating the tracks file."
    - Append to `conductor/tracks.md`:
      ```markdown

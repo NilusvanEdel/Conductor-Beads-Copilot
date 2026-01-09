@@ -7,7 +7,7 @@ description: |
   - Files like `conductor/tracks.md`, `conductor/product.md`, `conductor/workflow.md` exist
   - User asks about project status, implementation progress, or track management
   - User wants to organize development work with TDD practices
-  - User invokes `/conductor-*` commands (setup, newtrack, implement, status, revert, validate, block, skip, revise, archive, export, refresh)
+  - User invokes `/conductor-*` commands (setup, newtrack, implement, status, revert, validate, block, skip, revise, archive, export, handoff, refresh, dispatch, formula, wisp, distill)
   - User mentions documentation is outdated or wants to sync context with codebase changes
   
   Interoperable with Gemini CLI extension and Claude Code commands.
@@ -160,12 +160,54 @@ When this skill activates, load these files to understand the project:
 2. `conductor/tech-stack.md` - Technology constraints
 3. `conductor/workflow.md` - Development methodology (TDD, commits)
 4. `conductor/tracks.md` - Current work status
+5. `conductor/patterns.md` - **Codebase patterns (read before starting work)**
 
 **Important**: Conductor commits locally but never pushes. Users decide when to push to remote.
 
 For active tracks, also load:
 - `conductor/tracks/<track_id>/spec.md`
 - `conductor/tracks/<track_id>/plan.md`
+- `conductor/tracks/<track_id>/learnings.md` - **Patterns/gotchas from this track**
+
+## Learnings System (Ralph-style)
+
+Conductor captures and consolidates learnings across tracks, inspired by [Ralph](https://github.com/snarktank/ralph).
+
+### Key Files
+- `conductor/patterns.md` - Project-level consolidated patterns
+- `conductor/tracks/<id>/learnings.md` - Per-track discoveries
+
+### Templates
+Templates are bundled in the skill's `references/` folder:
+- [references/patterns-template.md](references/patterns-template.md) - Full patterns.md template
+- [references/learnings-template.md](references/learnings-template.md) - Full learnings.md template
+
+### Knowledge Flywheel
+1. **Capture** - After each task, append to track's `learnings.md`
+2. **Elevate** - At phase/track completion, promote reusable patterns to `patterns.md`
+3. **Archive** - Extract remaining patterns before archiving
+4. **Inherit** - New tracks read `patterns.md` to prime context
+
+### Learnings Entry Format
+```markdown
+## [YYYY-MM-DD HH:MM] - Phase N Task M: <task_name>
+Thread: $AMP_CURRENT_THREAD_ID
+- **Implemented:** <brief description>
+- **Files changed:** <list>
+- **Commit:** <sha_7chars>
+- **Learnings:**
+  - Patterns: <reusable patterns discovered>
+  - Gotchas: <things to watch out for>
+  - Context: <useful context for future>
+---
+```
+
+### Proactive Behaviors for Learnings
+- **On implement start**: Read `patterns.md` and announce pattern count
+- **On task complete**: Prompt for learnings capture
+- **On phase complete**: Offer pattern elevation to `patterns.md`
+- **On archive**: Extract remaining patterns before archiving
+- **On refresh**: Consolidate learnings across all tracks
 
 ## Beads Integration
 
@@ -297,3 +339,6 @@ fi
 - **Directory structure**: [references/structure.md](references/structure.md) - File layout and status markers
 - **Beads integration**: [references/beads-integration.md](references/beads-integration.md) - Session protocol, chemistry patterns
 - **Gastown patterns**: [references/gastown-patterns.md](references/gastown-patterns.md) - Multi-agent orchestration concepts
+- **Learnings system**: [references/learnings-system.md](references/learnings-system.md) - Ralph-style knowledge capture
+- **Patterns template**: [references/patterns-template.md](references/patterns-template.md) - Template for conductor/patterns.md
+- **Learnings template**: [references/learnings-template.md](references/learnings-template.md) - Template for track learnings.md

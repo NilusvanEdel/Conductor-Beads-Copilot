@@ -86,7 +86,18 @@ Implement track: $ARGUMENTS
      - `conductor/workflow.md`
    - **Error Handling:** If any read fails, STOP and inform user
 
-3a. **Beads Context:**
+3a. **Load Patterns Context (Ralph-style knowledge priming):**
+    - **Read Project Patterns:** If `conductor/patterns.md` exists:
+      - Read and announce: "📚 **Codebase Patterns:** Found X patterns from previous tracks"
+      - These patterns inform implementation decisions
+    - **Read Track Learnings:** If `conductor/tracks/<track_id>/learnings.md` exists:
+      - Read to understand prior work on this track
+      - Display: "📝 **Track Learnings:** Resuming with context from previous sessions"
+    - **Read Previous Track Learnings (optional):** For similar tracks in archive:
+      - Scan `conductor/archive/` for tracks with similar names/descriptions
+      - Read their `learnings.md` for relevant patterns
+
+3b. **Beads Context:**
     - **Check for Beads CLI:** Run `which bd`
     - **If NOT found:**
       > "⚠️ Beads CLI (`bd`) is not installed. Beads provides persistent task memory across sessions."
@@ -396,7 +407,69 @@ Implement track: $ARGUMENTS
 6. **Finalize Track:**
    - After all tasks complete, update `conductor/tracks.md`: `## [~]` → `## [x]`
    - **Clean Up State:** Delete `conductor/tracks/<track_id>/implement_state.json`
+   - **Elevate Patterns:** Prompt for pattern consolidation (see step 5e)
    - Announce track fully complete
+
+---
+
+## 5.1 LEARNINGS CAPTURE (After Each Task)
+
+**PROTOCOL: Record learnings and patterns discovered during implementation (Ralph-style progress tracking).**
+
+After marking each task `[x]` complete, append to `conductor/tracks/<track_id>/learnings.md`:
+
+```markdown
+## [YYYY-MM-DD HH:MM] - Phase N Task M: <task_name>
+Thread: $AMP_CURRENT_THREAD_ID (if available)
+- **Implemented:** <brief description of what was done>
+- **Files changed:** <list of files modified/created>
+- **Commit:** <sha_7chars>
+- **Learnings:**
+  - Patterns: <reusable patterns discovered, e.g., "this codebase uses X for Y">
+  - Gotchas: <things to watch out for, e.g., "don't forget to update Z when changing W">
+  - Context: <useful context, e.g., "the settings panel is in component X">
+---
+```
+
+**5e. Pattern Elevation (At Phase/Track Completion):**
+
+1. **Review Learnings:** Scan `learnings.md` for reusable patterns
+2. **Identify Candidates:** Look for:
+   - Patterns mentioned 2+ times
+   - Gotchas that apply beyond this track
+   - Context that future tracks would benefit from
+3. **Prompt for Elevation:**
+   > "I found these potentially reusable patterns from this phase/track:"
+   > 
+   > | Pattern | Occurrences | Elevate to project? |
+   > |---------|-------------|---------------------|
+   > | "Use Zod for validation" | 3 | ☐ |
+   > | "Barrel exports required" | 2 | ☐ |
+   > 
+   > "Select patterns to add to `conductor/patterns.md` (Enter numbers, or 'all', or 'skip'):"
+
+4. **Update Project Patterns:**
+   - If patterns selected, append to `conductor/patterns.md`:
+     ```markdown
+     - <pattern description> (from: <track_id>, <date>)
+     ```
+   - If `conductor/patterns.md` doesn't exist, create it with this structure:
+     ```markdown
+     # Codebase Patterns
+     
+     Reusable patterns discovered during development. Read this before starting new work.
+     
+     ---
+     
+     - <pattern> (from: <track_id>, <date>)
+     ```
+
+5. **Suggest AGENTS.md Updates:**
+   - If learnings are specific to a module/directory:
+     > "These learnings are specific to `src/auth/`. Would you like to update `src/auth/AGENTS.md`?"
+     > A) Yes - Add learnings to module AGENTS.md
+     > B) No - Keep in track learnings only
+   - If A: Create/update the module's AGENTS.md with relevant patterns
 
 ---
 

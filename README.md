@@ -358,9 +358,9 @@ Skills provide:
 ```
 Conductor-Beads/
 ├── .claude/
-│   ├── commands/        # Claude Code slash commands (13)
+│   ├── commands/        # Claude Code slash commands (17)
 │   └── skills/          # Skills (conductor, beads, skill-creator)
-├── commands/conductor/  # Gemini CLI TOML commands (13)
+├── commands/conductor/  # Gemini CLI TOML commands (17)
 ├── templates/           # Workflow and styleguide templates
 ├── docs/                # Documentation
 ├── CLAUDE.md            # Claude Code context
@@ -379,11 +379,13 @@ your-project/
 │   ├── tech-stack.md        # Technology choices
 │   ├── workflow.md          # Development standards
 │   ├── tracks.md            # Master track list
+│   ├── patterns.md          # Consolidated learnings (Ralph-style)
 │   ├── beads.json           # Beads integration config
 │   └── tracks/
 │       └── <track_id>/
 │           ├── spec.md      # Requirements
 │           ├── plan.md      # Task list
+│           ├── learnings.md # Patterns/gotchas discovered
 │           └── metadata.json
 └── .beads/                  # Beads data (if initialized)
 ```
@@ -489,6 +491,65 @@ flowchart LR
 | **Session Resume** | `bd ready` → `bd show --notes` → load spec → `implement` |
 | **Monitoring** | `status` / `validate` *(anytime)* |
 | **Context Drift** | `refresh` *(when codebase changed outside Conductor)* |
+
+### Knowledge Flywheel (Ralph-style Learnings)
+
+Conductor captures and consolidates learnings across tracks, inspired by [Ralph](https://github.com/snarktank/ralph):
+
+```mermaid
+flowchart TB
+    subgraph CAPTURE["📝 Per-Task Capture"]
+        T1[Implement Task] --> T2[Record in learnings.md]
+        T2 --> T3[Patterns / Gotchas / Context]
+    end
+    
+    subgraph ELEVATE["⬆️ Pattern Elevation"]
+        E1[Phase/Track Complete] --> E2[Review learnings.md]
+        E2 --> E3{Reusable pattern?}
+        E3 -->|Yes| E4[Add to patterns.md]
+        E3 -->|No| E5[Keep in track only]
+    end
+    
+    subgraph ARCHIVE["📦 Archive & Consolidate"]
+        A1[Archive Track] --> A2[Extract remaining patterns]
+        A2 --> A3[Preserve in patterns.md]
+        R1[Refresh Command] --> R2[Consolidate all learnings]
+        R2 --> R3[Merge duplicates]
+    end
+    
+    subgraph INHERIT["🧬 Knowledge Inheritance"]
+        N1[New Track] --> N2[Read patterns.md]
+        N2 --> N3[Prime context]
+        N3 --> N4[Seed learnings.md]
+    end
+    
+    T3 --> E1
+    E4 --> A3
+    A3 --> N2
+```
+
+**Key Files:**
+- `conductor/patterns.md` - Project-level patterns (read before starting new work)
+- `conductor/tracks/<id>/learnings.md` - Per-track discoveries (patterns, gotchas, context)
+
+**How it works:**
+1. **Capture** - After each task, learnings are appended to track's `learnings.md`
+2. **Elevate** - At phase/track completion, reusable patterns move to `patterns.md`
+3. **Archive** - Remaining patterns extracted before archiving
+4. **Inherit** - New tracks read `patterns.md` to prime context
+
+**Learnings Entry Format:**
+```markdown
+## [2025-01-09 14:30] - Phase 1 Task 2: Add auth middleware
+Thread: https://ampcode.com/threads/T-xxx
+- **Implemented:** JWT validation middleware
+- **Files changed:** src/auth/middleware.ts, src/auth/types.ts
+- **Commit:** abc1234
+- **Learnings:**
+  - Patterns: This codebase uses Zod for all validation
+  - Gotchas: Must update index.ts barrel exports when adding modules
+  - Context: Auth module owns all JWT logic
+```
 
 ---
 

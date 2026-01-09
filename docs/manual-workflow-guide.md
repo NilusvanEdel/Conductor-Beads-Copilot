@@ -62,11 +62,14 @@ flowchart TD
 | **Standard** | `setup` → `bd init` → `newtrack` → `implement` → `archive` |
 | **Multi-Section** | `implement` → `handoff` → *(new session)* → `implement` |
 | **Parallel Tasks** | `newtrack` (enable parallel) → `implement` (spawns workers) |
+| **Gastown Parallel** | `newtrack` → `dispatch` → `gt convoy list` → `status` |
 | **Session Resume** | `bd ready` → `bd show --notes` → `implement` |
 | **Blocked Task** | `block` → `skip` or wait → continue |
 | **Plan Changes** | `revise` → continue `implement` |
 | **Check Status** | `status` or `validate` anytime |
 | **Sync Context** | `refresh` when codebase drifts |
+| **Templates** | `formula list` → `wisp` or `bd mol pour` |
+| **Create Template** | complete track → `distill` → `formula show` |
 
 ## Why Manual Mode?
 
@@ -607,6 +610,214 @@ conductor/tracks/<track_id>/
 - 5+ tasks completed without handoff
 - Phase boundary with >50% tasks remaining
 - User mentions context issues
+
+---
+
+### 14. `/conductor-dispatch` (or `/conductor:dispatch`)
+
+**Purpose**: Dispatch a track to Gastown for multi-agent parallel execution.
+
+**When to use**: 
+- Track has parallel phases that benefit from multi-agent execution
+- Gastown is installed and configured
+- You want enhanced crash recovery and automated merge queue
+
+**Prerequisites**:
+- Gastown CLI (`gt`) installed
+- Beads CLI (`bd`) installed
+- Gastown Town initialized (`gt rig init`)
+
+**Manual workflow**:
+
+```
+Step 1: Run the command
+   /conductor-dispatch
+   # or specify track
+   /conductor-dispatch auth_20241219
+
+Step 2: Prerequisites check
+   - Gastown CLI verified
+   - Beads CLI verified
+   - Town status checked
+
+Step 3: Track selection
+   - If not specified, first incomplete track selected
+   - Parallel phases detected from plan.md
+
+Step 4: Convoy creation
+   - Beads epic created or found
+   - Gastown convoy created: gt convoy create
+
+Step 5: Task dispatch
+   - For each parallel task:
+     - Beads task created with dependencies
+     - Task slung to polecat: gt sling
+
+Step 6: Monitoring commands provided
+   - gt convoy list (check status)
+   - gt dashboard --port 8080 (web UI)
+   - gt agents (navigate sessions)
+```
+
+**Polecat workflow** (each worker):
+1. `bd prime` - Get AI-optimized context
+2. `gt hook` - Check assigned work
+3. `bd ready` - Find ready tasks
+4. Execute TDD workflow
+5. `bd close <id> --continue` - Complete and advance
+6. `gt done --exit` - Signal completion
+
+---
+
+### 15. `/conductor-formula` (or `/conductor:formula`)
+
+**Purpose**: List and manage track workflow templates (Beads formulas).
+
+**When to use**: 
+- View available track templates
+- Check formula structure before using
+- Understand template variables
+
+**Prerequisites**: Beads CLI (`bd`) and `.beads/` directory
+
+**Manual workflow**:
+
+```
+Step 1: Run the command
+   /conductor-formula           # List all formulas
+   /conductor-formula list      # Same as above
+   /conductor-formula show auth # Show specific formula
+
+Step 2: For "list" subcommand
+   - Runs: bd formula list --json
+   - Displays table of available formulas
+
+Step 3: For "show <name>" subcommand
+   - Runs: bd mol show <name> --json
+   - Displays formula structure
+   - Shows required variables
+   - Provides usage examples
+```
+
+**Output example**:
+```
+## Available Formulas (Track Templates)
+
+| Formula | Description | Variables |
+|---------|-------------|-----------|
+| `auth-module` | Authentication feature | `{{module_name}}` |
+| `api-endpoint` | REST API endpoint | `{{resource}}`, `{{methods}}` |
+
+**Usage:**
+- bd mol pour <name> - Create persistent track
+- /conductor-wisp <name> - Create ephemeral exploration
+```
+
+---
+
+### 16. `/conductor-wisp` (or `/conductor:wisp`)
+
+**Purpose**: Create ephemeral exploration track (no audit trail).
+
+**When to use**: 
+- Quick exploration before committing to a full track
+- Debugging sessions
+- Temporary work that shouldn't clutter history
+- Patrol cycles, health checks
+
+**Prerequisites**: Beads CLI (`bd`) and `.beads/` directory
+
+**Manual workflow**:
+
+```
+Step 1: Run the command
+   /conductor-wisp                    # Interactive mode
+   /conductor-wisp auth-module        # Use specific formula
+   /conductor-wisp auth --var name=payments
+
+Step 2: Formula selection
+   - If provided, use specified formula
+   - If not, list available formulas or create ad-hoc
+
+Step 3: Wisp creation
+   - Runs: bd mol wisp <formula> [--var key=value]
+   - Creates ephemeral instance in .beads-wisp/
+
+Step 4: Work in wisp
+   - bd mol current (see current step)
+   - bd close <step> --continue (complete steps)
+```
+
+**Wisp management**:
+```bash
+bd mol wisp list                    # List active wisps
+bd mol squash <wisp> --summary "..."  # Save with digest
+bd mol burn <wisp>                  # Delete without trace
+```
+
+**Transition to persistent track**:
+- A) Convert to track: `/conductor-newtrack` with findings
+- B) Create follow-up issues: `bd create`
+- C) Squash with digest
+- D) Burn (discard)
+
+---
+
+### 17. `/conductor-distill` (or `/conductor:distill`)
+
+**Purpose**: Extract reusable template from completed track.
+
+**When to use**: 
+- Track completed successfully
+- Pattern is reusable for future work
+- Want to create workflow template
+
+**Prerequisites**: 
+- Beads CLI (`bd`) and `.beads/` directory
+- Completed track with Beads epic
+
+**Manual workflow**:
+
+```
+Step 1: Run the command
+   /conductor-distill auth_20241219
+   /conductor-distill auth_20241219 --as "auth-module"
+
+Step 2: Track validation
+   - Track must be completed [x]
+   - Must have linked Beads epic
+
+Step 3: Variable analysis
+   - Scans spec.md and plan.md
+   - Identifies values to parameterize
+   - Proposes variables: {{module_name}}, {{token_type}}
+
+Step 4: Template extraction
+   - Runs: bd mol distill <epic_id> --as "<name>" --var ...
+   - Creates reusable formula
+
+Step 5: Optional Conductor registration
+   - Creates conductor/templates/<name>/
+   - Copies spec.template.md and plan.template.md
+
+Step 6: Cleanup options
+   - A) Archive source track
+   - B) Keep track in place
+   - C) Delete track (template already extracted)
+```
+
+**Template usage after extraction**:
+```bash
+# List templates
+/conductor-formula list
+
+# View template
+/conductor-formula show <template_name>
+
+# Create from template
+bd mol pour <template> --var module_name=payments
+/conductor-wisp <template> --var module_name=cache
+```
 
 ---
 

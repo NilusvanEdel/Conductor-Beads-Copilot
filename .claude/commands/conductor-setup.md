@@ -350,15 +350,53 @@ Present to user:
      }
      ```
    - Generate `spec.md` and `plan.md`
+   - **Create `learnings.md`:**
+     ```markdown
+     # Track Learnings: <track_id>
+     
+     Patterns, gotchas, and context discovered during implementation.
+     
+     ## Codebase Patterns (Inherited)
+     
+     <!-- No patterns yet - this is the first track -->
+     
+     ---
+     
+     <!-- Learnings from implementation will be appended below -->
+     ```
    - **CRITICAL: Inject Phase Completion Tasks** - For each Phase in `plan.md`, append:
      `- [ ] Task: Conductor - User Manual Verification '<Phase Name>' (Protocol in workflow.md)`
 
-4. **Commit State:**
+4. **Create Project Patterns File:**
+   - Create `conductor/patterns.md`:
+     ```markdown
+     # Codebase Patterns
+     
+     Reusable patterns discovered during development. Read this before starting new work.
+     
+     ## Code Conventions
+     <!-- Patterns will be added as tracks are completed -->
+     
+     ## Architecture
+     <!-- Patterns will be added as tracks are completed -->
+     
+     ## Gotchas
+     <!-- Patterns will be added as tracks are completed -->
+     
+     ## Testing
+     <!-- Patterns will be added as tracks are completed -->
+     
+     ---
+     Last refreshed: <timestamp>
+     ```
+   - Announce: "📚 Created `patterns.md` for capturing codebase learnings."
+
+5. **Commit State:**
    ```json
    {"last_successful_step": "3.3_initial_track_generated"}
    ```
 
-5. **Announce Progress:** "Track '<description>' created."
+6. **Announce Progress:** "Track '<description>' created."
 
 ---
 

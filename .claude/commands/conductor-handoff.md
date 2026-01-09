@@ -73,14 +73,40 @@ Update `conductor/tracks/<track_id>/implement_state.json` with section tracking:
 Create `conductor/tracks/<track_id>/handoff_<YYYYMMDD_HHMMSS>.md` with:
 
 - **Header:** Track info, section number, timestamp, link to previous handoff
+- **Thread URL:** Current Amp thread URL ($AMP_CURRENT_THREAD_ID) for context retrieval
 - **Progress Summary:** Overall %, current phase/task, completed/remaining tasks
 - **Parallel Execution State:** (if applicable) Worker status, file locks, pending workers
 - **Key Implementation Decisions:** Important choices made during this section
 - **Code Changes Summary:** Files modified, new files, recent commits
+- **Learnings Extracted:** Key patterns/gotchas from `learnings.md` this section
 - **Unresolved Issues:** Blockers, pending decisions, questions
 - **Context for Next Section:** Critical info, architecture notes, testing status
 - **Next Steps:** Immediate tasks, upcoming phase work
 - **Resume Instructions:** Commands and specific actions to continue
+
+### 4a. Extract Learnings for Handoff
+
+Before creating handoff document:
+1. **Read `learnings.md`:** Load `conductor/tracks/<track_id>/learnings.md`
+2. **Extract Recent Learnings:** Filter entries from current section (since last handoff)
+3. **Summarize for Handoff:**
+   - Key patterns discovered
+   - Gotchas encountered
+   - Context that next session needs
+4. **Include in Handoff Document:**
+   ```markdown
+   ## Learnings from This Section
+   
+   ### Patterns Discovered
+   - <pattern 1>
+   - <pattern 2>
+   
+   ### Gotchas Encountered
+   - <gotcha 1>
+   
+   ### Context for Next Session
+   - <context 1>
+   ```
 
 ## 5. Commit Handoff
 

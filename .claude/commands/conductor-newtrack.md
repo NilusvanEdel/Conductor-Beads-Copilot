@@ -253,7 +253,35 @@ Create a new track for: $ARGUMENTS
    - `conductor/tracks/<track_id>/spec.md`
    - `conductor/tracks/<track_id>/plan.md`
 
-9. **Update Tracks File:**
+9. **Initialize Learnings File (Ralph-style progress tracking):**
+   
+   a. **Read Project Patterns:** If `conductor/patterns.md` exists:
+      - Read and display: "📚 **Codebase Patterns:** Found X patterns from previous tracks"
+      - These patterns will guide implementation
+   
+   b. **Check for Similar Archived Tracks:**
+      - Scan `conductor/archive/` for tracks with similar names/descriptions
+      - If found, ask:
+        > "Found similar archived track(s): `<track_ids>`"
+        > "Would you like to seed learnings from a previous track? (Enter track_id or 'skip')"
+      - If selected: Copy relevant patterns from archived track's `learnings.md`
+   
+   c. **Create `learnings.md`:**
+      ```markdown
+      # Track Learnings: <track_id>
+      
+      Patterns, gotchas, and context discovered during implementation.
+      
+      ## Codebase Patterns (Inherited)
+      
+      <patterns from conductor/patterns.md or archived tracks>
+      
+      ---
+      
+      <!-- Learnings from implementation will be appended below -->
+      ```
+
+10. **Update Tracks File:**
    - Announce: "Updating the tracks file."
    - Append to `conductor/tracks.md`:
      ```markdown
@@ -264,7 +292,7 @@ Create a new track for: $ARGUMENTS
      *Link: [./conductor/tracks/<track_id>/](./conductor/tracks/<track_id>/)*
      ```
 
-10. **Announce Completion:**
+11. **Announce Completion:**
     > "New track '<track_id>' has been created and added to the tracks file. Run `/conductor-implement` to start."
 
 ---

@@ -66,6 +66,28 @@ Report what was revised and suggest `/conductor:implement` to continue.
 
 ---
 
+## 7a. LOG REVISION AS LEARNING
+
+**PROTOCOL: Record revisions as learnings for future tracks (Ralph-style gotcha tracking).**
+
+Revisions are valuable learnings - they indicate gaps in initial understanding.
+
+1. **Append to `learnings.md`:**
+   ```markdown
+   ## [YYYY-MM-DD HH:MM] - REVISION #N
+   - **Type:** Spec/Plan/Both
+   - **Trigger:** <what triggered the revision during implementation>
+   - **Learning:**
+     - Gotcha: <what was missed or misunderstood>
+     - Pattern: <how to avoid this in future>
+   ---
+   ```
+
+2. **Flag for Pattern Elevation:**
+   - If revision reveals a pattern applicable to future tracks, offer to add to `conductor/patterns.md`
+
+---
+
 ## 8. BEADS SYNC
 
 **PROTOCOL: Sync revisions with Beads.**
