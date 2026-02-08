@@ -9,7 +9,7 @@ Conductor-Beads is a unified toolkit for **Context-Driven Development** that com
 - **Conductor**: Spec-first planning, human-readable context, TDD workflow
 - **Beads**: Dependency-aware task graph, cross-session memory, agent-optimized output
 
-It works with both Gemini CLI (via extension) and Claude Code (via commands and skills).
+It works with Gemini CLI (via extension), Claude Code (via commands and skills), and Copilot CLI (via plugin).
 
 ## Architecture
 
@@ -17,12 +17,14 @@ It works with both Gemini CLI (via extension) and Claude Code (via commands and 
 ```
 Conductor-Beads/
 ├── .claude/
-│   ├── commands/           # Claude Code slash commands (16 commands)
+│   ├── commands/           # Claude Code slash commands (17 commands)
 │   └── skills/             # Claude Code skills
 │       ├── conductor/      # Context-driven development skill
 │       ├── beads/          # Persistent task memory skill
 │       └── skill-creator/  # Skill creation guide
-├── commands/conductor/     # Gemini CLI TOML commands (16 commands)
+├── commands/conductor/     # Gemini CLI TOML commands (17 commands)
+├── plugins/                # Copilot CLI plugin structure
+│   └── conductor-beads/    # Plugin with symlinks to .claude/
 ├── templates/              # Workflow and styleguide templates
 ├── docs/                   # Documentation
 ├── CLAUDE.md               # This file
@@ -30,26 +32,43 @@ Conductor-Beads/
 └── gemini-extension.json   # Gemini extension manifest
 ```
 
+### Installation Methods
+
+This toolkit supports multiple AI coding assistant platforms:
+
+| Platform | Installation | Command Format |
+|----------|--------------|----------------|
+| **Copilot CLI** | `copilot plugin install conductor-beads@conductor-beads` | `/conductor-beads:command` |
+| **Claude Code** | Manual copy to `~/.claude/` | `/conductor-command` |
+| **Gemini CLI** | `gemini extensions install <repo>` | `/conductor:command` |
+
+**Note:** All platforms access the same underlying commands - only the namespace prefix differs.
+
 ### Commands
 
-| Gemini CLI | Claude Code | Purpose |
+**Command Format by Platform:**
+- **Copilot CLI**: `/conductor-beads:command` (e.g., `/conductor-beads:setup`)
+- **Claude Code**: `/conductor-command` (e.g., `/conductor-setup`)
+- **Gemini CLI**: `/conductor:command` (e.g., `/conductor:setup`)
+
+| Gemini CLI | Claude Code | Copilot CLI | Purpose |
 |------------|-------------|---------|
-| `/conductor:setup` | `/conductor-setup` | Initialize project with context files and first track |
-| `/conductor:newTrack` | `/conductor-newtrack` | Create feature/bug track with spec and plan |
-| `/conductor:implement` | `/conductor-implement` | Execute tasks from track's plan (TDD workflow) |
-| `/conductor:status` | `/conductor-status` | Display progress overview |
-| `/conductor:revert` | `/conductor-revert` | Git-aware revert of tracks, phases, or tasks |
-| `/conductor:validate` | `/conductor-validate` | Validate project integrity and fix issues |
-| `/conductor:block` | `/conductor-block` | Mark task as blocked with reason |
-| `/conductor:skip` | `/conductor-skip` | Skip current task with justification |
-| `/conductor:revise` | `/conductor-revise` | Update spec/plan when implementation reveals issues |
-| `/conductor:archive` | `/conductor-archive` | Archive completed tracks |
-| `/conductor:export` | `/conductor-export` | Generate project summary export |
-| `/conductor:handoff` | `/conductor-handoff` | Create context handoff for section transfer |
-| `/conductor:refresh` | `/conductor-refresh` | Sync context docs with current codebase state |
-| `/conductor:formula` | `/conductor-formula` | List and manage track templates (Beads formulas) |
-| `/conductor:wisp` | `/conductor-wisp` | Create ephemeral exploration track (no audit trail) |
-| `/conductor:distill` | `/conductor-distill` | Extract reusable template from completed track |
+| `/conductor:setup` | `/conductor-setup` | `/conductor-beads:setup` | Initialize project with context files and first track |
+| `/conductor:newTrack` | `/conductor-newtrack` | `/conductor-beads:newtrack` | Create feature/bug track with spec and plan |
+| `/conductor:implement` | `/conductor-implement` | `/conductor-beads:implement` | Execute tasks from track's plan (TDD workflow) |
+| `/conductor:status` | `/conductor-status` | `/conductor-beads:status` | Display progress overview |
+| `/conductor:revert` | `/conductor-revert` | `/conductor-beads:revert` | Git-aware revert of tracks, phases, or tasks |
+| `/conductor:validate` | `/conductor-validate` | `/conductor-beads:validate` | Validate project integrity and fix issues |
+| `/conductor:block` | `/conductor-block` | `/conductor-beads:block` | Mark task as blocked with reason |
+| `/conductor:skip` | `/conductor-skip` | `/conductor-beads:skip` | Skip current task with justification |
+| `/conductor:revise` | `/conductor-revise` | `/conductor-beads:revise` | Update spec/plan when implementation reveals issues |
+| `/conductor:archive` | `/conductor-archive` | `/conductor-beads:archive` | Archive completed tracks |
+| `/conductor:export` | `/conductor-export` | `/conductor-beads:export` | Generate project summary export |
+| `/conductor:handoff` | `/conductor-handoff` | `/conductor-beads:handoff` | Create context handoff for section transfer |
+| `/conductor:refresh` | `/conductor-refresh` | `/conductor-beads:refresh` | Sync context docs with current codebase state |
+| `/conductor:formula` | `/conductor-formula` | `/conductor-beads:formula` | List and manage track templates (Beads formulas) |
+| `/conductor:wisp` | `/conductor-wisp` | `/conductor-beads:wisp` | Create ephemeral exploration track (no audit trail) |
+| `/conductor:distill` | `/conductor-distill` | `/conductor-beads:distill` | Extract reusable template from completed track |
 
 ### Skills
 
