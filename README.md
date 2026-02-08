@@ -102,7 +102,7 @@ gemini extensions install https://github.com/NguyenSiTrung/Conductor-Beads --aut
 
 ```bash
 # Clone the repository
-git clone https://github.com/NguyenSiTrung/Conductor-Beads.git
+git clone https://github.com/NguyenSiTrung/Conductor-Beads-Copilot.git
 
 # Copy plugin to Copilot plugins directory
 mkdir -p ~/.copilot/plugins
@@ -118,7 +118,7 @@ copilot plugin install github.com/NguyenSiTrung/Conductor-Beads/plugins/conducto
 **Minimal Installation** (conductor commands only):
 
 ```bash
-git clone https://github.com/NguyenSiTrung/Conductor-Beads.git
+git clone https://github.com/NguyenSiTrung/Conductor-Beads-Copilot.git
 
 # Copy just the conductor commands (symlinks to .claude/commands)
 mkdir -p ~/.copilot/plugins/conductor-beads/.github/plugin
