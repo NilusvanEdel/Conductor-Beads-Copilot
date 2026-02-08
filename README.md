@@ -17,6 +17,7 @@ Together, they enable AI agents to manage long-horizon development tasks without
 
 ## Supported Platforms
 
+- **Copilot CLI** - via plugin system (recommended)
 - **Gemini CLI** - via extension commands (TOML)
 - **Claude Code** - via slash commands and skills
 - **Agent Skills compatible CLIs** - via skills specification
@@ -50,6 +51,27 @@ bd --version
 ---
 
 ## Installation
+
+### Copilot CLI (Recommended)
+
+The fastest way to get started:
+
+```bash
+copilot plugin install conductor-beads@conductor-beads
+```
+
+After installation, commands are available with the `/conductor-beads:` namespace:
+
+```bash
+/conductor-beads:setup      # Initialize project
+/conductor-beads:newtrack   # Create feature/bug track  
+/conductor-beads:implement  # Execute tasks from plan
+```
+
+**What's included:**
+- All 17 Conductor commands
+- 3 auto-activating skills (conductor, beads, skill-creator)
+- Automatic updates via plugin system
 
 ### Claude Code
 
@@ -235,7 +257,26 @@ Shows:
 
 ---
 
+## Installation Method Comparison
+
+| Platform | Installation | Command Format | Auto-Updates | Best For |
+|----------|--------------|----------------|--------------|----------|
+| **Copilot CLI** | `copilot plugin install` | `/conductor-beads:command` | ✅ Yes | Quick start, automatic updates |
+| **Claude Code** | Manual copy to `~/.claude/` | `/conductor-command` | ❌ No | Customization, local modifications |
+| **Gemini CLI** | `gemini extensions install` | `/conductor:command` | ✅ Yes | Gemini users, extension ecosystem |
+
+All three platforms provide the same 17 commands and functionality - only the namespace differs.
+
+---
+
 ## Commands Reference
+
+**Note:** Command format varies by platform:
+- **Copilot CLI**: `/conductor-beads:command`
+- **Claude Code**: `/conductor-command`  
+- **Gemini CLI**: `/conductor:command`
+
+Examples below use Claude Code format for brevity.
 
 | Gemini CLI | Claude Code | Description |
 |------------|-------------|-------------|
