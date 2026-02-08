@@ -98,44 +98,20 @@ gemini extensions install https://github.com/NguyenSiTrung/Conductor-Beads --aut
 
 ### Copilot CLI
 
-**Full Installation** (all commands and skills):
-
+**Project local Installation**:
 ```bash
 # Clone the repository
-git clone https://github.com/NguyenSiTrung/Conductor-Beads.git
+git clone https://github.com/NilusvanEdel/Conductor-Beads-Copilot
 
 # Copy plugin to Copilot plugins directory
 mkdir -p ~/.copilot/plugins
 cp -r Conductor-Beads/plugins/conductor-beads ~/.copilot/plugins/
 ```
 
-**GitHub URL Installation** (recommended for auto-updates):
+**GitHub Repository Installation** (recommended for auto-updates):
 
 ```bash
-copilot plugin install github.com/NguyenSiTrung/Conductor-Beads/plugins/conductor-beads
-```
-
-**Minimal Installation** (conductor commands only):
-
-```bash
-git clone https://github.com/NguyenSiTrung/Conductor-Beads.git
-
-# Copy just the conductor commands (symlinks to .claude/commands)
-mkdir -p ~/.copilot/plugins/conductor-beads/.github/plugin
-cp -r Conductor-Beads/plugins/conductor-beads/commands ~/.copilot/plugins/conductor-beads/
-cp -r Conductor-Beads/.github/plugin ~/.copilot/plugins/conductor-beads/
-```
-
-**Project-Local Installation**:
-
-```bash
-# Full - copy entire plugin directory to your project
-cp -r Conductor-Beads/plugins/conductor-beads your-project/
-
-# Minimal - conductor commands only
-mkdir -p your-project/conductor-beads/commands
-cp -r Conductor-Beads/plugins/conductor-beads/commands your-project/conductor-beads/
-cp -r Conductor-Beads/.github/plugin your-project/conductor-beads/
+copilot plugin install https://github.com/NilusvanEdel/Conductor-Beads-Copilot.git
 ```
 
 After installation, commands are available with the `/conductor-beads:` namespace:
@@ -165,6 +141,9 @@ Run the setup command in your project directory:
 
 # Gemini CLI
 /conductor:setup
+
+# Copilot CLI
+/conductor-beads:setup
 ```
 
 This creates the `conductor/` directory with:
