@@ -559,6 +559,42 @@ Thread: https://ampcode.com/threads/T-xxx
 
 ---
 
+## Troubleshooting
+
+### Copilot CLI Plugin Issues
+
+**Symlinks not working on Windows:**
+- Windows requires Developer Mode enabled for symlink support
+- Alternative: Clone the repository and manually copy `.claude/` contents
+- Or use WSL/Linux environment for full symlink support
+
+**Commands not found after plugin install:**
+- Verify installation: `copilot plugin list`
+- Check command format: Use `/conductor-beads:command` (note the colon and namespace)
+- Restart your IDE or terminal after installation
+
+**Plugin update not reflecting changes:**
+- Force refresh: `copilot plugin uninstall conductor-beads@conductor-beads`
+- Then reinstall: `copilot plugin install conductor-beads@conductor-beads`
+
+### General Issues
+
+**Beads commands failing:**
+- Verify Beads is installed: `bd --version`
+- Initialize if needed: `bd init` or `bd init --stealth`
+- Check `.beads/` directory exists in project root
+
+**Commands showing different format:**
+- This is expected - namespace varies by platform:
+  - Copilot CLI: `/conductor-beads:setup`
+  - Claude Code: `/conductor-setup`
+  - Gemini CLI: `/conductor:setup`
+- All access the same underlying commands
+
+For more help, see [full documentation](docs/) or open an issue on GitHub.
+
+---
+
 ## License
 
 [Apache License 2.0](LICENSE)
