@@ -2,15 +2,21 @@
 
 ## Active Tracks
 
-- [x] **copilot_analysis_20260208** - Copilot CLI Plugin System Analysis
-  - Type: Feature (Research)
+- [ ] **copilot_plugin_impl_20260208** - Copilot CLI Plugin Implementation
+  - Type: Feature (Implementation)
   - Created: 2026-02-08
-  - Purpose: Analyze how to make Conductor-Beads installable via `/plugin install` while maintaining compatibility
-  - Beads Epic: Conductor-Beads-Copilot-kvl
+  - Purpose: Implement plugin support for Copilot CLI while maintaining backward compatibility
+  - Depends on: copilot_analysis_20260208 (completed)
+  - Beads Epic: TBD
 
 ## Completed Tracks
 
-*(No completed tracks yet)*
+- [x] **copilot_analysis_20260208** - Copilot CLI Plugin System Analysis
+  - Type: Feature (Research)
+  - Created: 2026-02-08
+  - Completed: 2026-02-08
+  - Purpose: Analyzed how to make Conductor-Beads installable via `/plugin install`
+  - Beads Epic: Conductor-Beads-Copilot-kvl
 
 ## Archived Tracks
 
