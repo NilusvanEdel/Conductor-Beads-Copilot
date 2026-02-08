@@ -40,6 +40,6 @@
 
 ---
 
-## [~] Track: Update README with Copilot instructions
+## [x] Track: Update README with Copilot instructions
 *Link: [./conductor/tracks/copilot_readme_update_20260208/](./conductor/tracks/copilot_readme_update_20260208/)*
 
