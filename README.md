@@ -1,4 +1,6 @@
-# Conductor-Beads
+# Conductor-Beads FORK
+
+This is a fork of the great repository from https://github.com/NguyenSiTrung/Conductor-Beads tailored specifically for copilot-cli with a slightly adjusted workflow.
 
 **Measure twice, code once.**
 
@@ -98,16 +100,6 @@ gemini extensions install https://github.com/NguyenSiTrung/Conductor-Beads --aut
 
 ### Copilot CLI
 
-**Project local Installation**:
-```bash
-# Clone the repository
-git clone https://github.com/NilusvanEdel/Conductor-Beads-Copilot
-
-# Copy plugin to Copilot plugins directory
-mkdir -p ~/.copilot/plugins
-cp -r Conductor-Beads/plugins/conductor-beads ~/.copilot/plugins/
-```
-
 **GitHub Repository Installation** (recommended for auto-updates):
 
 ```bash
@@ -124,7 +116,6 @@ After installation, commands are available with the `/conductor-beads:` namespac
 
 **What's included:**
 - All 16 Conductor commands
-- 3 auto-activating skills (conductor, beads, skill-creator)
 - Automatic updates via plugin system
 
 ---
