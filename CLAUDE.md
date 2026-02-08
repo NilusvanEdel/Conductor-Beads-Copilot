@@ -17,12 +17,12 @@ It works with Gemini CLI (via extension), Claude Code (via commands and skills),
 ```
 Conductor-Beads/
 ├── .claude/
-│   ├── commands/           # Claude Code slash commands (17 commands)
+│   ├── commands/           # Claude Code slash commands (16 commands)
 │   └── skills/             # Claude Code skills
 │       ├── conductor/      # Context-driven development skill
 │       ├── beads/          # Persistent task memory skill
 │       └── skill-creator/  # Skill creation guide
-├── commands/conductor/     # Gemini CLI TOML commands (17 commands)
+├── commands/conductor/     # Gemini CLI TOML commands (16 commands)
 ├── plugins/                # Copilot CLI plugin structure
 │   └── conductor-beads/    # Plugin with symlinks to .claude/
 ├── templates/              # Workflow and styleguide templates

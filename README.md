@@ -69,7 +69,7 @@ After installation, commands are available with the `/conductor-beads:` namespac
 ```
 
 **What's included:**
-- All 17 Conductor commands
+- All 16 Conductor commands
 - 3 auto-activating skills (conductor, beads, skill-creator)
 - Automatic updates via plugin system
 
@@ -265,7 +265,7 @@ Shows:
 | **Claude Code** | Manual copy to `~/.claude/` | `/conductor-command` | ❌ No | Customization, local modifications |
 | **Gemini CLI** | `gemini extensions install` | `/conductor:command` | ✅ Yes | Gemini users, extension ecosystem |
 
-All three platforms provide the same 17 commands and functionality - only the namespace differs.
+All three platforms provide the same 16 commands and functionality - only the namespace differs.
 
 ---
 
@@ -355,9 +355,9 @@ Skills provide:
 ```
 Conductor-Beads/
 ├── .claude/
-│   ├── commands/        # Claude Code slash commands (17)
+│   ├── commands/        # Claude Code slash commands (16)
 │   └── skills/          # Skills (conductor, beads, skill-creator)
-├── commands/conductor/  # Gemini CLI TOML commands (17)
+├── commands/conductor/  # Gemini CLI TOML commands (16)
 ├── templates/           # Workflow and styleguide templates
 ├── docs/                # Documentation
 ├── CLAUDE.md            # Claude Code context
