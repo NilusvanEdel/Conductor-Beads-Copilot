@@ -46,7 +46,7 @@
 
 ---
 
-## [ ] Track: Fix Copilot CLI Installation Instructions
+## [~] Track: Fix Copilot CLI Installation Instructions
 *Link: [./conductor/tracks/copilot_readme_install_fix_20260208/](./conductor/tracks/copilot_readme_install_fix_20260208/)*
 - Priority: 🔴 Critical
 - Issue: Marketplace installation method doesn't work - need local and GitHub options

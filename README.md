@@ -52,27 +52,6 @@ bd --version
 
 ## Installation
 
-### Copilot CLI (Recommended)
-
-The fastest way to get started:
-
-```bash
-copilot plugin install conductor-beads@conductor-beads
-```
-
-After installation, commands are available with the `/conductor-beads:` namespace:
-
-```bash
-/conductor-beads:setup      # Initialize project
-/conductor-beads:newtrack   # Create feature/bug track  
-/conductor-beads:implement  # Execute tasks from plan
-```
-
-**What's included:**
-- All 16 Conductor commands
-- 3 auto-activating skills (conductor, beads, skill-creator)
-- Automatic updates via plugin system
-
 ### Claude Code
 
 **Full Installation** (all skills):
@@ -116,6 +95,61 @@ cp -r Conductor-Beads/.claude/skills/conductor your-project/.claude/skills/
 ```bash
 gemini extensions install https://github.com/NguyenSiTrung/Conductor-Beads --auto-update
 ```
+
+### Copilot CLI
+
+**Full Installation** (all commands and skills):
+
+```bash
+# Clone the repository
+git clone https://github.com/NguyenSiTrung/Conductor-Beads.git
+
+# Copy plugin to Copilot plugins directory
+mkdir -p ~/.copilot/plugins
+cp -r Conductor-Beads/plugins/conductor-beads ~/.copilot/plugins/
+```
+
+**GitHub URL Installation** (recommended for auto-updates):
+
+```bash
+copilot plugin install github.com/NguyenSiTrung/Conductor-Beads/plugins/conductor-beads
+```
+
+**Minimal Installation** (conductor commands only):
+
+```bash
+git clone https://github.com/NguyenSiTrung/Conductor-Beads.git
+
+# Copy just the conductor commands (symlinks to .claude/commands)
+mkdir -p ~/.copilot/plugins/conductor-beads/.github/plugin
+cp -r Conductor-Beads/plugins/conductor-beads/commands ~/.copilot/plugins/conductor-beads/
+cp -r Conductor-Beads/.github/plugin ~/.copilot/plugins/conductor-beads/
+```
+
+**Project-Local Installation**:
+
+```bash
+# Full - copy entire plugin directory to your project
+cp -r Conductor-Beads/plugins/conductor-beads your-project/
+
+# Minimal - conductor commands only
+mkdir -p your-project/conductor-beads/commands
+cp -r Conductor-Beads/plugins/conductor-beads/commands your-project/conductor-beads/
+cp -r Conductor-Beads/.github/plugin your-project/conductor-beads/
+```
+
+After installation, commands are available with the `/conductor-beads:` namespace:
+
+```bash
+/conductor-beads:setup      # Initialize project
+/conductor-beads:newtrack   # Create feature/bug track  
+/conductor-beads:implement  # Execute tasks from plan
+```
+
+**What's included:**
+- All 16 Conductor commands
+- 3 auto-activating skills (conductor, beads, skill-creator)
+- Automatic updates via plugin system
 
 ---
 
@@ -261,7 +295,7 @@ Shows:
 
 | Platform | Installation | Command Format | Auto-Updates | Best For |
 |----------|--------------|----------------|--------------|----------|
-| **Copilot CLI** | `copilot plugin install` | `/conductor-beads:command` | ✅ Yes | Quick start, automatic updates |
+| **Copilot CLI** | Clone + copy (or GitHub URL) | `/conductor-beads:command` | ✅ Yes (GitHub method) | Flexible setup, auto-updates available |
 | **Claude Code** | Manual copy to `~/.claude/` | `/conductor-command` | ❌ No | Customization, local modifications |
 | **Gemini CLI** | `gemini extensions install` | `/conductor:command` | ✅ Yes | Gemini users, extension ecosystem |
 
