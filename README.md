@@ -17,9 +17,9 @@ Together, they enable AI agents to manage long-horizon development tasks without
 
 ## Supported Platforms
 
-- **Copilot CLI** - via plugin system (recommended)
 - **Gemini CLI** - via extension commands (TOML)
-- **Claude Code** - via slash commands and skills
+- **Claude Code** - via slash commands and skills-
+- **Copilot CLI** - via plugin system
 - **Agent Skills compatible CLIs** - via skills specification
 
 ---
