@@ -32,54 +32,79 @@ All tasks follow a strict lifecycle:
 
 1. **Select Task:** Choose the next available task from `plan.md` in sequential order
 
-2. **Mark In Progress:** Before beginning work, edit `plan.md` and change the task from `[ ]` to `[~]`
+2. **Create Feature Worktree (if needed):** 
+   - If the task requires a new branch or isolated development environment:
+     ```bash
+     git worktree add ../project-<feature-name> -b <feature-branch>
+     cd ../project-<feature-name>
+     ```
+   - For tasks on existing branches, switch to the appropriate worktree directory
+   - For small tasks on main branch, work in the main worktree
 
-3. **Write Failing Tests (Red Phase):**
+3. **Mark In Progress:** Before beginning work, edit `plan.md` and change the task from `[ ]` to `[~]`
+
+4. **Write Failing Tests (Red Phase):**
    - Create a new test file for the feature or bug fix.
    - Write one or more unit tests that clearly define the expected behavior and acceptance criteria for the task.
    - **CRITICAL:** Run the tests and confirm that they fail as expected. This is the "Red" phase of TDD. Do not proceed until you have failing tests.
 
-4. **Implement to Pass Tests (Green Phase):**
+5. **Implement to Pass Tests (Green Phase):**
    - Write the minimum amount of application code necessary to make the failing tests pass.
    - Run the test suite again and confirm that all tests now pass. This is the "Green" phase.
 
-5. **Refactor (Optional but Recommended):**
+6. **Refactor (Optional but Recommended):**
    - With the safety of passing tests, refactor the implementation code and the test code to improve clarity, remove duplication, and enhance performance without changing the external behavior.
    - Rerun tests to ensure they still pass after refactoring.
 
-6. **Verify Coverage:** Run coverage reports using the project's chosen tools. For example, in a Python project, this might look like:
+7. **Verify Coverage:** Run coverage reports using the project's chosen tools. For example, in a Python project, this might look like:
    ```bash
    pytest --cov=app --cov-report=html
    ```
    Target: >80% coverage for new code. The specific tools and commands will vary by language and framework.
 
-7. **Document Deviations:** If implementation differs from tech stack:
+8. **Document Deviations:** If implementation differs from tech stack:
    - **STOP** implementation
    - Update `tech-stack.md` with new design
    - Add dated note explaining the change
    - Resume implementation
 
-8. **Commit Code Changes:**
+9. **Commit Code Changes:**
    - Stage all code changes related to the task.
    - Propose a clear, concise commit message e.g, `feat(ui): Create basic HTML structure for calculator`.
    - Perform the commit.
 
-9. **Attach Task Summary with Git Notes:**
-   - **Step 9.1: Get Commit Hash:** Obtain the hash of the *just-completed commit* (`git log -1 --format="%H"`).
-   - **Step 9.2: Draft Note Content:** Create a detailed summary for the completed task. This should include the task name, a summary of changes, a list of all created/modified files, and the core "why" for the change.
-   - **Step 9.3: Attach Note:** Use the `git notes` command to attach the summary to the commit.
-     ```bash
-     # The note content from the previous step is passed via the -m flag.
-     git notes add -m "<note content>" <commit_hash>
-     ```
+10. **Attach Task Summary with Git Notes:**
+    - **Step 10.1: Get Commit Hash:** Obtain the hash of the *just-completed commit* (`git log -1 --format="%H"`).
+    - **Step 10.2: Draft Note Content:** Create a detailed summary for the completed task. This should include the task name, a summary of changes, a list of all created/modified files, and the core "why" for the change.
+    - **Step 10.3: Attach Note:** Use the `git notes` command to attach the summary to the commit.
+      ```bash
+      # The note content from the previous step is passed via the -m flag.
+      git notes add -m "<note content>" <commit_hash>
+      ```
 
-10. **Get and Record Task Commit SHA:**
-    - **Step 10.1: Update Plan:** Read `plan.md`, find the line for the completed task, update its status from `[~]` to `[x]`, and append the first 7 characters of the *just-completed commit's* commit hash.
-    - **Step 10.2: Write Plan:** Write the updated content back to `plan.md`.
+11. **Get and Record Task Commit SHA:**
+    - **Step 11.1: Update Plan:** Read `plan.md`, find the line for the completed task, update its status from `[~]` to `[x]`, and append the first 7 characters of the *just-completed commit's* commit hash.
+    - **Step 11.2: Write Plan:** Write the updated content back to `plan.md`.
 
-11. **Commit Plan Update:**
+12. **Commit Plan Update:**
     - **Action:** Stage the modified `plan.md` file.
     - **Action:** Commit this change with a descriptive message (e.g., `conductor(plan): Mark task 'Create user model' as complete`).
+
+13. **Merge and Cleanup (if using feature worktree):**
+    - If task was completed in a feature worktree:
+      ```bash
+      # Switch to main worktree
+      cd ../main-project
+      
+      # Merge feature branch
+      git merge <feature-branch>
+      
+      # Remove completed worktree
+      git worktree remove ../project-<feature-name>
+      
+      # Delete feature branch (optional)
+      git branch -d <feature-branch>
+      ```
 
 ### Phase Completion Verification and Checkpointing Protocol
 
@@ -172,6 +197,33 @@ Before marking any task complete, verify:
 # Example: Commands to set up the development environment (e.g., install dependencies, configure database)
 # e.g., for a Node.js project: npm install
 # e.g., for a Go project: go mod tidy
+
+# Initialize main worktree if not already done
+git worktree list
+
+# Create dedicated worktrees for different branches/features
+git worktree add ../project-feature feature-branch
+git worktree add ../project-hotfix hotfix-branch
+```
+
+### Git Worktree Management
+```bash
+# List all worktrees
+git worktree list
+
+# Create new worktree for feature development
+git worktree add ../project-<feature-name> <branch-name>
+
+# Switch to a worktree directory
+cd ../project-<feature-name>
+
+# Remove completed worktree
+git worktree remove ../project-<feature-name>
+# or from within the worktree:
+cd ../main-project && git worktree remove ../project-<feature-name>
+
+# Prune stale worktree references
+git worktree prune
 ```
 
 ### Daily Development
@@ -179,6 +231,9 @@ Before marking any task complete, verify:
 # Example: Commands for common daily tasks (e.g., start dev server, run tests, lint, format)
 # e.g., for a Node.js project: npm run dev, npm test, npm run lint
 # e.g., for a Go project: go run main.go, go test ./..., go fmt ./...
+
+# When working with worktrees, ensure you're in the correct directory
+pwd  # Verify current worktree location
 ```
 
 ### Before Committing
@@ -247,6 +302,50 @@ Before requesting review:
    - Performance acceptable on mobile
    - Interactions feel native
 
+## Git Worktree Strategy
+
+### When to Use Worktrees
+
+**Use Feature Worktrees For:**
+- Large features that span multiple days
+- Experimental changes or proof-of-concepts
+- When you need to switch between multiple features frequently
+- Hotfixes that need immediate attention while working on other features
+- When running different versions of the application simultaneously (e.g., testing backwards compatibility)
+
+**Use Main Worktree For:**
+- Small bug fixes
+- Documentation updates
+- Simple enhancements that can be completed quickly
+- Daily maintenance tasks
+
+### Worktree Naming Conventions
+
+```bash
+# Feature development
+git worktree add ../project-feature-auth feature/auth-system
+git worktree add ../project-feature-api feature/api-v2
+
+# Hotfixes
+git worktree add ../project-hotfix-login hotfix/login-bug
+
+# Experiments
+git worktree add ../project-experiment-ui experiment/new-ui
+
+# Release preparation
+git worktree add ../project-release-v2 release/v2.0
+```
+
+### Worktree Directory Structure
+
+```
+parent-directory/
+├── main-project/          # Main worktree (main/master branch)
+├── project-feature-auth/  # Feature worktree
+├── project-hotfix-login/  # Hotfix worktree
+└── project-experiment-ui/ # Experimental worktree
+```
+
 ## Commit Guidelines
 
 ### Message Format
@@ -292,12 +391,17 @@ A task is complete when:
 ## Emergency Procedures
 
 ### Critical Bug in Production
-1. Create hotfix branch from main
+1. Create hotfix worktree from main
+   ```bash
+   git worktree add ../project-hotfix -b hotfix/<bug-description>
+   cd ../project-hotfix
+   ```
 2. Write failing test for bug
 3. Implement minimal fix
 4. Test thoroughly including mobile
-5. Deploy immediately
-6. Document in plan.md
+5. Merge hotfix to main and deploy immediately
+6. Clean up worktree: `cd ../main-project && git worktree remove ../project-hotfix`
+7. Document in plan.md
 
 ### Data Loss
 1. Stop all write operations
@@ -329,15 +433,26 @@ A task is complete when:
 - All commits remain local until the user explicitly pushes
 - Users decide when and how to push to remote repositories
 - This allows for commit squashing, rebase, or other git workflows before pushing
+- When using worktrees, ensure you're in the correct worktree directory before pushing
+- Consider pushing from the main worktree after merging feature branches
+
+### Git Worktree Best Practices
+- Keep main worktree for stable/main branch work
+- Create feature worktrees for larger features or experimental work
+- Use descriptive worktree directory names: `../project-auth-system`, `../project-api-refactor`
+- Regularly clean up completed worktrees to avoid clutter
+- Share git notes and other metadata across worktrees (they share the same git repository)
 
 ### Deployment Steps
-1. Merge feature branch to main
-2. Tag release with version
-3. Push to deployment service
-4. Run database migrations
-5. Verify deployment
-6. Test critical paths
-7. Monitor for errors
+1. Ensure you're in the main worktree: `cd ../main-project` (or appropriate main directory)
+2. Merge feature branches from their respective worktrees
+3. Tag release with version: `git tag v1.0.0`
+4. Push to deployment service from main worktree
+5. Run database migrations
+6. Verify deployment
+7. Test critical paths
+8. Monitor for errors
+9. Clean up any completed feature worktrees
 
 ### Post-Deployment
 1. Monitor analytics

@@ -27,7 +27,8 @@ Initialize this project with context-driven development. Follow this workflow pr
    - If `STEP` is `"2.2_product_guidelines"`: Announce "Resuming: Guidelines complete. Next: Tech Stack." → Proceed to **Section 2.3**
    - If `STEP` is `"2.3_tech_stack"`: Announce "Resuming: Tech Stack complete. Next: Code Styleguides." → Proceed to **Section 2.4**
    - If `STEP` is `"2.4_code_styleguides"`: Announce "Resuming: Styleguides complete. Next: Workflow." → Proceed to **Section 2.5**
-   - If `STEP` is `"2.5_workflow"`: Announce "Resuming: Scaffolding complete. Next: Initial Track." → Proceed to **Phase 2 (Section 3.0)**
+   - If `STEP` is `"2.5_workflow"`: Announce "Resuming: Workflow complete. Next: Local Agents." → Proceed to **Section 2.6**
+   - If `STEP` is `"2.6_local_agents"`: Announce "Resuming: Local Agents complete. Next: Initial Track." → Proceed to **Phase 2 (Section 3.0)**
    - If `STEP` is `"3.3_initial_track_generated"` or `"complete"`:
      - Announce: "Project already initialized. Use `/conductor-newtrack` or `/conductor-implement`."
      - **HALT** the setup process.
@@ -245,14 +246,115 @@ Present to user:
 
 ---
 
-### 2.6 Finalization
+### 2.6 Setup Local Agents (Interactive)
+
+1. **Announce:** "Now let's configure local development agents for your project workflow."
+
+2. **Agent Template Registry:** Present available agent templates with roles:
+   ```
+   Available Agent Templates:
+   
+   - Conductor: Project orchestration, plan.md management, quality gate enforcement
+   - Implementer: TDD implementation, feature development, code quality adherence
+   - Reviewer: Code review protocols, quality standards validation, test coverage verification
+   - Architect: System design decisions, tech stack management, architectural documentation
+   - Documenter: README maintenance, API documentation, inline code documentation
+   ```
+
+3. **Ask Configuration Preference:**
+   > "Configure local development agents for this project?"
+   > A) **Create Standard Agent Set** - Generate all template agents with project customization
+   > B) **Skip Agent Configuration** - Use default AI assistant for all development tasks
+   > C) **Custom Agent Selection** - Choose specific agents and customize their configurations
+   >
+   > Please respond with A, B, or C.
+
+4. **Execute Based on Selection:**
+
+   **IF A (Create Standard Agent Set):**
+   - **Step 4.1:** Execute `mkdir -p conductor/agents`
+   - **Step 4.2:** Generate agent configuration files:
+     - Write `conductor/agents/conductor.json`:
+       ```json
+       {
+         "role": "project_lead",
+         "responsibilities": [
+           "Plan.md lifecycle management",
+           "Quality gate enforcement", 
+           "Workflow protocol adherence",
+           "Phase completion verification"
+         ],
+         "interaction_patterns": {
+           "task_selection": "sequential_from_plan",
+           "blocking_issues": "immediate_escalation",
+           "quality_standards": "enforce_before_completion"
+         }
+       }
+       ```
+     - Write `conductor/agents/implementer.json`:
+       ```json
+       {
+         "role": "feature_developer", 
+         "responsibilities": [
+           "TDD implementation (red-green-refactor)",
+           "Code coverage maintenance (>80%)",
+           "Style guide adherence",
+           "Unit test creation and maintenance"
+         ],
+         "interaction_patterns": {
+           "development_approach": "test_first",
+           "coverage_enforcement": "block_on_insufficient",
+           "refactoring": "safety_first_with_tests"
+         }
+       }
+       ```
+     - Write `conductor/agents/reviewer.json`, `conductor/agents/architect.json`, `conductor/agents/documenter.json` with corresponding configurations
+   - **Step 4.3:** Announce: "Standard agent configurations created in `conductor/agents/`."
+
+   **IF B (Skip Agent Configuration):**
+   - **Step 4.1:** Execute `touch conductor/.no-agents`
+   - **Step 4.2:** Write skip marker with timestamp and reason
+   - **Step 4.3:** Announce: "Agent configuration skipped. Default AI assistant will handle all development tasks."
+
+   **IF C (Custom Agent Selection):**
+   - **Step 4.1:** Present agent selection interface:
+     > "Select agents to configure (multiple selections allowed):"
+     > A) Conductor (Project Lead)
+     > B) Implementer (Feature Developer) 
+     > C) Reviewer (Code Quality)
+     > D) Architect (System Design)
+     > E) Documenter (Documentation)
+     >
+     > Enter your selections (e.g., "A,B,C"):
+   - **Step 4.2:** **CRITICAL:** Wait for user input before proceeding
+   - **Step 4.3:** For each selected agent, ask customization:
+     > "Customize [AGENT_NAME] responsibilities?"
+     > A) Use template configuration
+     > B) Modify responsibilities and interaction patterns
+   - **Step 4.4:** Execute `mkdir -p conductor/agents`
+   - **Step 4.5:** Generate only selected agent configurations with customizations applied
+   - **Step 4.6:** Announce: "Custom agent set configured with [X] agents."
+
+5. **Validation and State Commit:**
+   - **Step 5.1:** Verify all agent configuration files are valid JSON
+   - **Step 5.2:** **CRITICAL:** If any JSON validation fails, halt and announce the error
+   - **Step 5.3:** Write `conductor/setup_state.json`:
+     ```json
+     {"last_successful_step": "2.6_local_agents"}
+     ```
+
+6. **Continue:** Proceed to Section 2.7.
+
+---
+
+### 2.7 Finalization
 
 1. **Summarize:** List all files created/copied.
 2. **Transition:** Announce proceeding to initial track generation.
 
 ---
 
-### 2.7 BEADS INTEGRATION
+### 2.8 BEADS INTEGRATION
 
 **PROTOCOL: Set up Beads integration for persistent task memory.**
 
