@@ -1,27 +1,30 @@
-# Conductor-Beads FORK
+# Conductor-Beads for GitHub Copilot
 
-This is a fork of the great repository from https://github.com/NguyenSiTrung/Conductor-Beads tailored specifically for copilot-cli with a slightly adjusted workflow.
+This is a **GitHub Copilot plugin** fork of the great repository from https://github.com/NguyenSiTrung/Conductor-Beads, specifically tailored for GitHub Copilot with an optimized workflow.
 
 **Measure twice, code once.**
 
-A unified toolkit for **Context-Driven Development** that combines structured planning with persistent memory. Turn your AI assistant into a proactive project manager that follows a strict protocol: **Context → Spec & Plan → Implement**.
+A unified toolkit for **Context-Driven Development** designed specifically for GitHub Copilot users. Transform your AI assistant into a proactive project manager that follows a strict protocol: **Context → Spec & Plan → Implement**.
 
 **Version:** 0.1.0
 
 ## What is Conductor-Beads?
 
-Conductor-Beads integrates two powerful systems:
+Conductor-Beads integrates two powerful systems optimized for GitHub Copilot:
 
 - **Conductor** provides the methodology — specs, plans, tracks, and TDD workflows
 - **Beads** provides the memory — persistent task tracking that survives conversation compaction
 
-Together, they enable AI agents to manage long-horizon development tasks without losing context across sessions.
+Together, they enable GitHub Copilot to manage long-horizon development tasks without losing context across sessions.
 
-## Supported Platforms
+## Primary Platform
 
-- **Gemini CLI** - via extension commands (TOML)
-- **Claude Code** - via slash commands and skills-
-- **Copilot CLI** - via plugin system
+- **GitHub Copilot** - via plugin system (this repository)
+
+## Other Platforms
+
+- **Gemini CLI** - via extension commands (TOML) - [Original Repository](https://github.com/NguyenSiTrung/Conductor-Beads)
+- **Claude Code** - via slash commands and skills - [Original Repository](https://github.com/NguyenSiTrung/Conductor-Beads)
 - **Agent Skills compatible CLIs** - via skills specification
 
 ---
@@ -54,69 +57,36 @@ bd --version
 
 ## Installation
 
-### Claude Code
+### GitHub Copilot (Primary)
 
-**Full Installation** (all skills):
+**Plugin Installation** (recommended):
+
 ```bash
-# Clone the repository
-git clone https://github.com/NguyenSiTrung/Conductor-Beads.git
-
-# Copy commands and skills to your global config
-cp -r Conductor-Beads/.claude/commands/* ~/.claude/commands/
-cp -r Conductor-Beads/.claude/skills/* ~/.claude/skills/
+ghcli plugin install NilusvanEdel/Conductor-Beads-Copilot
 ```
 
-**Minimal Installation** (conductor only, smaller context):
+**Verify Installation:**
 ```bash
-git clone https://github.com/NguyenSiTrung/Conductor-Beads.git
-
-# Copy only commands and conductor skill
-cp -r Conductor-Beads/.claude/commands/* ~/.claude/commands/
-mkdir -p ~/.claude/skills
-cp -r Conductor-Beads/.claude/skills/conductor ~/.claude/skills/
+ghcli plugin list | grep conductor
 ```
 
-**Project-Local Installation**:
-```bash
-# Full - copy entire .claude folder
-cp -r Conductor-Beads/.claude your-project/
-
-# Minimal - conductor only
-mkdir -p your-project/.claude/skills
-cp -r Conductor-Beads/.claude/commands your-project/.claude/
-cp -r Conductor-Beads/.claude/skills/conductor your-project/.claude/skills/
-```
-
-| Installation | Includes | Best For |
-|--------------|----------|----------|
-| **Full** | conductor, beads, skill-creator skills | Standalone Beads usage, skill development |
-| **Minimal** | conductor skill only (has Beads integration) | Most projects, smaller context window |
-
-### Gemini CLI
+After installation, commands are available with the `conductor-` prefix:
 
 ```bash
-gemini extensions install https://github.com/NguyenSiTrung/Conductor-Beads --auto-update
-```
-
-### Copilot CLI
-
-**GitHub Repository Installation** (recommended for auto-updates):
-
-```bash
-copilot plugin install https://github.com/NilusvanEdel/Conductor-Beads-Copilot.git
-```
-
-After installation, commands are available with the `/conductor-beads:` namespace:
-
-```bash
-/conductor-beads:setup      # Initialize project
-/conductor-beads:newtrack   # Create feature/bug track  
-/conductor-beads:implement  # Execute tasks from plan
+conductor-setup      # Initialize project
+conductor-newtrack   # Create feature/bug track  
+conductor-implement  # Execute tasks from plan
 ```
 
 **What's included:**
-- All 16 Conductor commands
+- All 16 Conductor commands optimized for GitHub Copilot
 - Automatic updates via plugin system
+- Git worktree integration
+- TDD workflow with quality gates
+
+### Other Platforms
+
+For **Claude Code** or **Gemini CLI** support, please use the [original repository](https://github.com/NguyenSiTrung/Conductor-Beads).
 
 ---
 
@@ -127,21 +97,18 @@ After installation, commands are available with the `/conductor-beads:` namespac
 Run the setup command in your project directory:
 
 ```bash
-# Claude Code
-/conductor-setup
-
-# Gemini CLI
-/conductor:setup
-
-# Copilot CLI
-/conductor-beads:setup
+# GitHub Copilot (Primary)
+conductor-setup
 ```
+
+> **Note:** For other platforms, see the [original repository](https://github.com/NguyenSiTrung/Conductor-Beads)
 
 This creates the `conductor/` directory with:
 - `product.md` - Product vision and goals
-- `tech-stack.md` - Technology choices
-- `workflow.md` - Development standards (TDD, commits)
+- `tech-stack.md` - Technology choices  
+- `workflow.md` - Development standards (TDD, commits, git worktrees)
 - `tracks.md` - Master track list
+- `agents/` - Local development agent configurations (optional)
 
 ### Step 2: Initialize Beads
 
@@ -185,17 +152,15 @@ Use **stealth** when working on a shared repository where you don't want to comm
 ### Creating a New Track
 
 ```bash
-# Claude Code
-/conductor-newtrack "Add user authentication"
-
-# Gemini CLI
-/conductor:newTrack "Add user authentication"
+# GitHub Copilot
+conductor-newtrack "Add user authentication"
 ```
 
 This creates:
 - `conductor/tracks/<track_id>/spec.md` - Requirements
 - `conductor/tracks/<track_id>/plan.md` - Phased task list
 - `conductor/tracks/<track_id>/metadata.json` - Track metadata
+- `conductor/tracks/<track_id>/learnings.md` - Pattern capture
 - Beads epic (if enabled): `bd-xxxx`
 
 ### Implementing a Track
@@ -485,13 +450,13 @@ flowchart LR
 
 | Pattern | Command Flow |
 |---------|--------------|
-| **Happy Path** | `setup` → `bd init` → `newtrack` → `implement` → `archive` |
-| **Multi-Section** | `implement` → *(5+ tasks)* → `handoff` → *(new session)* → `implement` |
-| **Handle Blockers** | `implement` → `block` → `skip` or wait → `implement` |
-| **Mid-Track Changes** | `implement` → `revise` → `implement` |
-| **Session Resume** | `bd ready` → `bd show --notes` → load spec → `implement` |
-| **Monitoring** | `status` / `validate` *(anytime)* |
-| **Context Drift** | `refresh` *(when codebase changed outside Conductor)* |
+| **Happy Path** | `conductor-setup` → `bd init` → `conductor-newtrack` → `conductor-implement` → `conductor-archive` |
+| **Multi-Section** | `conductor-implement` → *(5+ tasks)* → `conductor-handoff` → *(new session)* → `conductor-implement` |
+| **Handle Blockers** | `conductor-implement` → `conductor-block` → `conductor-skip` or wait → `conductor-implement` |
+| **Mid-Track Changes** | `conductor-implement` → `conductor-revise` → `conductor-implement` |
+| **Session Resume** | `bd ready` → `bd show --notes` → load spec → `conductor-implement` |
+| **Monitoring** | `conductor-status` / `conductor-validate` *(anytime)* |
+| **Context Drift** | `conductor-refresh` *(when codebase changed outside Conductor)* |
 
 ### Knowledge Flywheel (Ralph-style Learnings)
 
@@ -565,21 +530,26 @@ Thread: https://ampcode.com/threads/T-xxx
 
 ## Troubleshooting
 
-### Copilot CLI Plugin Issues
+### GitHub Copilot Plugin Issues
 
-**Symlinks not working on Windows:**
-- Windows requires Developer Mode enabled for symlink support
-- Alternative: Clone the repository and manually copy `.claude/` contents
-- Or use WSL/Linux environment for full symlink support
+**Plugin installation fails:**
+- Ensure you have GitHub CLI installed: `gh --version`
+- Check permissions: `gh auth status`
+- Verify repository access: `gh repo view NilusvanEdel/Conductor-Beads-Copilot`
 
 **Commands not found after plugin install:**
-- Verify installation: `copilot plugin list`
-- Check command format: Use `/conductor-beads:command` (note the colon and namespace)
-- Restart your IDE or terminal after installation
+- Verify installation: `gh plugin list | grep conductor`
+- Check command format: Use `conductor-command` (no prefix or namespace)
+- Restart your terminal after installation
 
 **Plugin update not reflecting changes:**
-- Force refresh: `copilot plugin uninstall conductor-beads@conductor-beads`
-- Then reinstall: `copilot plugin install conductor-beads@conductor-beads`
+- Force refresh: `gh plugin uninstall conductor-beads-copilot`
+- Then reinstall: `gh plugin install NilusvanEdel/Conductor-Beads-Copilot`
+
+**Git worktree commands failing:**
+- Ensure you're in a git repository: `git status`
+- Check worktree support: `git worktree list`
+- Verify sufficient disk space for additional worktrees
 
 ### General Issues
 
@@ -588,12 +558,10 @@ Thread: https://ampcode.com/threads/T-xxx
 - Initialize if needed: `bd init` or `bd init --stealth`
 - Check `.beads/` directory exists in project root
 
-**Commands showing different format:**
-- This is expected - namespace varies by platform:
-  - Copilot CLI: `/conductor-beads:setup`
-  - Claude Code: `/conductor-setup`
-  - Gemini CLI: `/conductor:setup`
-- All access the same underlying commands
+**GitHub Copilot integration issues:**
+- This plugin is designed for GitHub Copilot CLI
+- For VS Code GitHub Copilot, see [original repository](https://github.com/NguyenSiTrung/Conductor-Beads)
+- Commands use simple prefix format: `conductor-setup`, not `/conductor-beads:setup`
 
 For more help, see [full documentation](docs/) or open an issue on GitHub.
 

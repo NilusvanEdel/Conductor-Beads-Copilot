@@ -1,0 +1,43 @@
+{
+  "schema_version": "1.0",
+  "name": "conductor-beads-copilot",
+  "display_name": "Conductor Beads (GitHub Copilot)",
+  "description": "Context-Driven Development framework for GitHub Copilot. Provides Conductor workflows and optional Beads integration.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Conductor-Beads Community"
+  },
+  "license": "Apache-2.0",
+  "repository": "https://github.com/NilusvanEdel/Conductor-Beads-Copilot",
+  "commands": [
+    { "name": "conductor-setup", "description": "Initialize project with Conductor context-driven development", "script": "commands/conductor-setup.md" },
+    { "name": "conductor-newtrack", "description": "Create a new development track (feature/bug)", "script": "commands/conductor-newtrack.md" },
+    { "name": "conductor-implement", "description": "Execute tasks from plan.md for implementation", "script": "commands/conductor-implement.md" },
+    { "name": "conductor-archive", "description": "Archive a completed track", "script": "commands/conductor-archive.md" },
+    { "name": "conductor-block", "description": "Mark a task as blocked", "script": "commands/conductor-block.md" },
+    { "name": "conductor-distill", "description": "Distill context and notes", "script": "commands/conductor-distill.md" },
+    { "name": "conductor-export", "description": "Export track artifacts", "script": "commands/conductor-export.md" },
+    { "name": "conductor-formula", "description": "Apply implementation formula or pattern", "script": "commands/conductor-formula.md" },
+    { "name": "conductor-handoff", "description": "Handoff work to another contributor or session", "script": "commands/conductor-handoff.md" },
+    { "name": "conductor-refresh", "description": "Refresh context after external code changes", "script": "commands/conductor-refresh.md" },
+    { "name": "conductor-revert", "description": "Revert an in-progress change", "script": "commands/conductor-revert.md" },
+    { "name": "conductor-revise", "description": "Revise spec or plan", "script": "commands/conductor-revise.md" },
+    { "name": "conductor-skip", "description": "Skip a blocked or irrelevant task", "script": "commands/conductor-skip.md" },
+    { "name": "conductor-status", "description": "Show current status of tracks and tasks", "script": "commands/conductor-status.md" },
+    { "name": "conductor-validate", "description": "Run validation checks (lint, tests) for project", "script": "commands/conductor-validate.md" },
+    { "name": "conductor-wisp", "description": "Lightweight snapshot or context save", "script": "commands/conductor-wisp.md" }
+  ]
+  ,
+  "files": [
+    "commands/",
+    "templates/",
+    "docs/",
+    "README.md",
+    "plugin.json",
+    "commands/"
+  ],
+  "exclude": [
+    ".beads",
+    ".beads/*"
+  ]
+}
