@@ -1,0 +1,10 @@
+{
+  "name": "conductor-beads",
+  "description": "Context-Driven Development framework with persistent memory. Combines structured planning (Conductor) with cross-session task tracking (Beads).",
+  "version": "0.1.0",
+  "author": {
+    "name": "Conductor-Beads Community"
+  },
+  "repository": "https://github.com/NguyenSiTrung/Conductor-Beads",
+  "license": "Apache-2.0"
+}

@@ -18,7 +18,8 @@ Together, they enable AI agents to manage long-horizon development tasks without
 ## Supported Platforms
 
 - **Gemini CLI** - via extension commands (TOML)
-- **Claude Code** - via slash commands and skills
+- **Claude Code** - via slash commands and skills-
+- **Copilot CLI** - via plugin system
 - **Agent Skills compatible CLIs** - via skills specification
 
 ---
@@ -94,6 +95,61 @@ cp -r Conductor-Beads/.claude/skills/conductor your-project/.claude/skills/
 ```bash
 gemini extensions install https://github.com/NguyenSiTrung/Conductor-Beads --auto-update
 ```
+
+### Copilot CLI
+
+**Full Installation** (all commands and skills):
+
+```bash
+# Clone the repository
+git clone https://github.com/NguyenSiTrung/Conductor-Beads.git
+
+# Copy plugin to Copilot plugins directory
+mkdir -p ~/.copilot/plugins
+cp -r Conductor-Beads/plugins/conductor-beads ~/.copilot/plugins/
+```
+
+**GitHub URL Installation** (recommended for auto-updates):
+
+```bash
+copilot plugin install github.com/NguyenSiTrung/Conductor-Beads/plugins/conductor-beads
+```
+
+**Minimal Installation** (conductor commands only):
+
+```bash
+git clone https://github.com/NguyenSiTrung/Conductor-Beads.git
+
+# Copy just the conductor commands (symlinks to .claude/commands)
+mkdir -p ~/.copilot/plugins/conductor-beads/.github/plugin
+cp -r Conductor-Beads/plugins/conductor-beads/commands ~/.copilot/plugins/conductor-beads/
+cp -r Conductor-Beads/.github/plugin ~/.copilot/plugins/conductor-beads/
+```
+
+**Project-Local Installation**:
+
+```bash
+# Full - copy entire plugin directory to your project
+cp -r Conductor-Beads/plugins/conductor-beads your-project/
+
+# Minimal - conductor commands only
+mkdir -p your-project/conductor-beads/commands
+cp -r Conductor-Beads/plugins/conductor-beads/commands your-project/conductor-beads/
+cp -r Conductor-Beads/.github/plugin your-project/conductor-beads/
+```
+
+After installation, commands are available with the `/conductor-beads:` namespace:
+
+```bash
+/conductor-beads:setup      # Initialize project
+/conductor-beads:newtrack   # Create feature/bug track  
+/conductor-beads:implement  # Execute tasks from plan
+```
+
+**What's included:**
+- All 16 Conductor commands
+- 3 auto-activating skills (conductor, beads, skill-creator)
+- Automatic updates via plugin system
 
 ---
 
@@ -235,7 +291,26 @@ Shows:
 
 ---
 
+## Installation Method Comparison
+
+| Platform | Installation | Command Format | Auto-Updates | Best For |
+|----------|--------------|----------------|--------------|----------|
+| **Copilot CLI** | Clone + copy (or GitHub URL) | `/conductor-beads:command` | ✅ Yes (GitHub method) | Flexible setup, auto-updates available |
+| **Claude Code** | Manual copy to `~/.claude/` | `/conductor-command` | ❌ No | Customization, local modifications |
+| **Gemini CLI** | `gemini extensions install` | `/conductor:command` | ✅ Yes | Gemini users, extension ecosystem |
+
+All three platforms provide the same 16 commands and functionality - only the namespace differs.
+
+---
+
 ## Commands Reference
+
+**Note:** Command format varies by platform:
+- **Copilot CLI**: `/conductor-beads:command`
+- **Claude Code**: `/conductor-command`  
+- **Gemini CLI**: `/conductor:command`
+
+Examples below use Claude Code format for brevity.
 
 | Gemini CLI | Claude Code | Description |
 |------------|-------------|-------------|
@@ -314,9 +389,9 @@ Skills provide:
 ```
 Conductor-Beads/
 ├── .claude/
-│   ├── commands/        # Claude Code slash commands (17)
+│   ├── commands/        # Claude Code slash commands (16)
 │   └── skills/          # Skills (conductor, beads, skill-creator)
-├── commands/conductor/  # Gemini CLI TOML commands (17)
+├── commands/conductor/  # Gemini CLI TOML commands (16)
 ├── templates/           # Workflow and styleguide templates
 ├── docs/                # Documentation
 ├── CLAUDE.md            # Claude Code context
@@ -515,6 +590,42 @@ Thread: https://ampcode.com/threads/T-xxx
 - [Beads Integration](docs/BEADS_INTEGRATION.md)
 - [Parallel Execution](docs/PARALLEL_EXECUTION.md)
 - [Beads Official Docs](https://github.com/steveyegge/beads)
+
+---
+
+## Troubleshooting
+
+### Copilot CLI Plugin Issues
+
+**Symlinks not working on Windows:**
+- Windows requires Developer Mode enabled for symlink support
+- Alternative: Clone the repository and manually copy `.claude/` contents
+- Or use WSL/Linux environment for full symlink support
+
+**Commands not found after plugin install:**
+- Verify installation: `copilot plugin list`
+- Check command format: Use `/conductor-beads:command` (note the colon and namespace)
+- Restart your IDE or terminal after installation
+
+**Plugin update not reflecting changes:**
+- Force refresh: `copilot plugin uninstall conductor-beads@conductor-beads`
+- Then reinstall: `copilot plugin install conductor-beads@conductor-beads`
+
+### General Issues
+
+**Beads commands failing:**
+- Verify Beads is installed: `bd --version`
+- Initialize if needed: `bd init` or `bd init --stealth`
+- Check `.beads/` directory exists in project root
+
+**Commands showing different format:**
+- This is expected - namespace varies by platform:
+  - Copilot CLI: `/conductor-beads:setup`
+  - Claude Code: `/conductor-setup`
+  - Gemini CLI: `/conductor:setup`
+- All access the same underlying commands
+
+For more help, see [full documentation](docs/) or open an issue on GitHub.
 
 ---
 
