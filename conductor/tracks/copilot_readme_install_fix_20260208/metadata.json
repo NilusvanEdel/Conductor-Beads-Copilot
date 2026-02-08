@@ -1,0 +1,28 @@
+{
+  "id": "copilot_readme_install_fix_20260208",
+  "shortname": "copilot_readme_install_fix",
+  "created": "2026-02-08T12:25:49Z",
+  "updated": "2026-02-08T12:25:49Z",
+  "status": "new",
+  "type": "feature",
+  "priority": "critical",
+  "description": "Fix Copilot CLI installation instructions - add local and GitHub link options",
+  "depends_on": [],
+  "estimated_hours": null,
+  "beads_epic": "Conductor-Beads-Copilot-7u2",
+  "beads_tasks": {
+    "phase1": "Conductor-Beads-Copilot-7u2.1",
+    "phase1_task1": "Conductor-Beads-Copilot-7u2.1.1",
+    "phase1_task2": "Conductor-Beads-Copilot-7u2.1.2",
+    "phase1_task3": "Conductor-Beads-Copilot-7u2.1.3",
+    "phase2": "Conductor-Beads-Copilot-7u2.2",
+    "phase2_task1": "Conductor-Beads-Copilot-7u2.2.1",
+    "phase2_task2": "Conductor-Beads-Copilot-7u2.2.2",
+    "phase2_task3": "Conductor-Beads-Copilot-7u2.2.3",
+    "phase2_task4": "Conductor-Beads-Copilot-7u2.2.4",
+    "phase3": "Conductor-Beads-Copilot-7u2.3",
+    "phase3_task1": "Conductor-Beads-Copilot-7u2.3.1",
+    "phase3_task2": "Conductor-Beads-Copilot-7u2.3.2",
+    "phase3_task3": "Conductor-Beads-Copilot-7u2.3.3"
+  }
+}
