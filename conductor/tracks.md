@@ -37,3 +37,9 @@
 - Each track represents a feature, bug fix, or refactoring effort
 - Track IDs follow format: `<shortname>_YYYYMMDD`
 - Tracks are created via `/conductor-newtrack` or `/conductor:newTrack`
+
+---
+
+## [ ] Track: Update README with Copilot instructions
+*Link: [./conductor/tracks/copilot_readme_update_20260208/](./conductor/tracks/copilot_readme_update_20260208/)*
+
